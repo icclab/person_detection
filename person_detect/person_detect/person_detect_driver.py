@@ -48,15 +48,11 @@ class PersonDetectDriver(Node):
         
         self.t = TransformStamped()
         
-        # try:
-        #     self.t = self.tf_buffer.lookup_transform(
-        #         self.to_frame_rel, self.from_frame_rel, rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=5.0)
-        #     )
-
         try:
             self.t = self.tf_buffer.lookup_transform(
-                self.to_frame_rel, self.from_frame_rel, self.time, timeout=rclpy.duration.Duration(seconds=5.0)
+                self.to_frame_rel, self.from_frame_rel, rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=5.0)
             )
+
 
         except TransformException as ex:
             self.get_logger().info(
