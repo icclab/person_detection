@@ -32,7 +32,7 @@ class DetectPerson(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.marker_pub = self.create_publisher(Marker, 'visualization_marker', 10)
+        self.marker_pub = self.create_publisher(Marker, '/summit/person_marker', 10)
 
         package_name = 'person_detect'
         blob = 'launch/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob'
@@ -245,7 +245,8 @@ class DetectPerson(Node):
 
                 marker.pose.position.x = p2.point.x  
                 marker.pose.position.y = p2.point.y  
-                marker.pose.position.z = p2.point.z 
+                # marker.pose.position.z = p2.point.z 
+                marker.pose.position.z = 0.0
 
                 marker.scale.x = 0.1
                 marker.scale.y = 0.1

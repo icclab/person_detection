@@ -29,6 +29,7 @@ setup(
     entry_points={
         'console_scripts': [
             'person_detect = person_detect.person_detect:main',
+            'person_detect_driver = person_detect.person_detect_driver:main',
         ],
     },
 )
