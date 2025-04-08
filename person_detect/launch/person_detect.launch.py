@@ -143,7 +143,3 @@ def generate_launch_description():
         person_detect_node,
         #rviz_node
     ])
-
-
-
-##I want to extract bounding box and get the coordinate of the center point in the camera frame, now I have the result of the detection as 
