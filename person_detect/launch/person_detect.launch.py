@@ -85,6 +85,8 @@ def generate_launch_description():
         remappings=[
            ('/leakage_marker', '/summit/leakage_marker'),
            ('/leakage_annotated_image', '/summit/leakage_annotated_image'),
+           ('/tf', '/summit/tf'),
+           ('/tf_static', '/summit/tf_static'),
         ],
         parameters=[
             {'image_topic': '/summit/color/image'},
