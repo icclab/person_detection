@@ -39,7 +39,7 @@ class PersonDetectDriver(Node):
 
         self.subscription = self.create_subscription(
             TrackDetection2DArray,
-            '/color/yolov4_Spatial_tracklets',
+            '/summit/color/yolov4_Spatial_tracklets',
             self.tracking_callback,
             10
         )
