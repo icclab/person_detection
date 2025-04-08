@@ -102,9 +102,9 @@ class PersonDetectDriver(Node):
                     # marker.pose.position.z = p2.point.z 
                     marker.pose.position.z = 0.0
 
-                    marker.scale.x = 0.1
-                    marker.scale.y = 0.1
-                    marker.scale.z = 0.1
+                    marker.scale.x = 0.2
+                    marker.scale.y = 0.2
+                    marker.scale.z = 0.2
 
                     marker.color.r = 0.0
                     marker.color.g = 0.0
