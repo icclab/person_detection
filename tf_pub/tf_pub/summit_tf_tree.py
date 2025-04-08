@@ -36,7 +36,7 @@ class SummitTFListener(Node):
 
             # Publish pose
             self.pose_publisher.publish(pose_msg)
-            self.get_logger().info(f"Published Pose: x={pose_msg.pose.position.x}, y={pose_msg.pose.position.y}, z={pose_msg.pose.position.z}")
+            # self.get_logger().info(f"Published Pose: x={pose_msg.pose.position.x}, y={pose_msg.pose.position.y}, z={pose_msg.pose.position.z}")
 
         except tf2_ros.LookupException:
             self.get_logger().warn("Transform from 'map' to 'base_footprint' not found!")

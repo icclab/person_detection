@@ -2,13 +2,20 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    # File 2 - Variables and Parameters
+
+    arm_launch = os.path.join(
+        get_package_share_directory('liquid_pickup'),
+        'launch',
+        'people_detect.launch.py'
+    )
+
     depthai_examples_path = get_package_share_directory('depthai_examples')
     default_rviz = os.path.join(depthai_examples_path, 'rviz', 'pointCloud.rviz')
     default_resources_path = os.path.join(depthai_examples_path, 'resources')
@@ -58,7 +65,17 @@ def generate_launch_description():
         DeclareLaunchArgument('fullFrameTracking', default_value=fullFrameTracking),
     ]
 
-    # Node from file 1 (liquid_detection)
+    tf_pub_node = Node(
+        package='tf_pub',  
+        executable='tf_pub',  
+        name='summit_tf_pub',
+        output='screen',
+        remappings=[
+            ('/tf', '/summit/tf'),
+            ('/tf_static', '/summit/tf_static'),
+        ],
+    )
+
     roboflow_node = Node(
         package='liquid_detection',
         executable='roboflow',
@@ -106,6 +123,10 @@ def generate_launch_description():
         emulate_tty=True,
     )
 
+    include_arm_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(arm_launch)
+    )
+
     # Optional: Rviz node
     rviz_node = Node(
        package='rviz2',
@@ -115,8 +136,14 @@ def generate_launch_description():
     )
 
     return LaunchDescription(launch_args + [
+        include_arm_launch,
+        tf_pub_node,
         roboflow_node,
         tracker_node,
         person_detect_node,
         #rviz_node
     ])
+
+
+
+##I want to extract bounding box and get the coordinate of the center point in the camera frame, now I have the result of the detection as 
