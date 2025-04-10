@@ -90,8 +90,8 @@ def generate_launch_description():
         ],
         parameters=[
             {'image_topic': '/summit/color/image'},
-            {'gps_topic': '/summit/gps/fix'},
-            {'local_topic': '/summit/base_pose'},
+            {'depth_topic': '/summit/stereo/depth'},
+            {'camera_info_topic': '/summit/color/camera_info'},
         ]
     )
 
