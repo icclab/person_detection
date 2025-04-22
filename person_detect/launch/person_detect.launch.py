@@ -10,11 +10,11 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    # arm_launch = os.path.join(
-    #     get_package_share_directory('liquid_pickup'),
-    #     'launch',
-    #     'people_detect.launch.py'
-    # )
+    arm_launch = os.path.join(
+        get_package_share_directory('liquid_pickup'),
+        'launch',
+        'people_detect.launch.py'
+    )
 
     depthai_examples_path = get_package_share_directory('depthai_examples')
     default_rviz = os.path.join(depthai_examples_path, 'rviz', 'pointCloud.rviz')
@@ -157,9 +157,9 @@ def generate_launch_description():
         emulate_tty=True,
     )
 
-    # include_arm_launch = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(arm_launch)
-    # )
+    include_arm_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(arm_launch)
+    )
 
     # Optional: Rviz node
     rviz_node = Node(
@@ -170,12 +170,12 @@ def generate_launch_description():
     )
 
     return LaunchDescription(launch_args + [
-        # include_arm_launch,
-        # tf_pub_node,
-        # roboflow_node,
+        include_arm_launch,
+        tf_pub_node,
+        roboflow_node,
         tracker_node,
         person_detect_node,
         #rviz_node
-        # ray_water,
-        # pixel_pub
+        ray_water,
+        pixel_pub
     ])
