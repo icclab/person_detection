@@ -106,13 +106,22 @@ class PersonDetectDriver(Node):
                     marker.scale.y = 0.2
                     marker.scale.z = 0.2
 
-                    marker.color.r = 0.0
-                    marker.color.g = 0.0
-                    marker.color.b = 1.0
-                    marker.color.a = 1.0
+                    if bbox_size_x <= bbox_size_y:
+                        self.get_logger().info("Person is standing")
+                        marker.color.r = 0.0
+                        marker.color.g = 1.0
+                        marker.color.b = 0.0
+                        
+                    else:
+                        self.get_logger().info("Person is lying down")
+                        marker.color.r = 1.0
+                        marker.color.g = 1.0
+                        marker.color.b = 0.0
 
+                    marker.color.a = 1.0
                     self.marker_pub.publish(marker)
 
+                    # print("bbox: size: x", bbox_size_x, ", y: ", bbox_size_y)
 
 def main(args=None):
     rclpy.init(args=args)

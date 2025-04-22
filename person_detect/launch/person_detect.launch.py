@@ -10,11 +10,11 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    arm_launch = os.path.join(
-        get_package_share_directory('liquid_pickup'),
-        'launch',
-        'people_detect.launch.py'
-    )
+    # arm_launch = os.path.join(
+    #     get_package_share_directory('liquid_pickup'),
+    #     'launch',
+    #     'people_detect.launch.py'
+    # )
 
     depthai_examples_path = get_package_share_directory('depthai_examples')
     default_rviz = os.path.join(depthai_examples_path, 'rviz', 'pointCloud.rviz')
@@ -95,6 +95,38 @@ def generate_launch_description():
         ]
     )
 
+    ray_water = Node(
+        package='liquid_detection',  
+        executable='water',  
+        name='ray_water',
+        output='screen',
+        remappings=[
+            ('/tf', '/summit/tf'),
+            ('/tf_static', '/summit/tf_static'),
+            ('/leakage_marker', '/summit/leakage_marker'),
+        ],
+        parameters=[
+            {'world_frame': 'map'},
+            {'use_sim_time': True},
+            {'pixel_topic': '/leakage_pixel_coords'},
+            {'camera_info_topic': '/summit/color/camera_info'},
+            {'output_topic': '/leakage_ground_point'},
+            {'tf_lookup_timeout_sec': 1.0},]
+    )
+
+    pixel_pub = Node(
+        package='liquid_detection',  
+        executable='pixel_water',  
+        name='pixel_water',
+        output='screen',
+        remappings=[
+            ('/leakage_annotated_image', '/summit/leakage_annotated_image'),
+        ],
+        parameters=[
+            {'image_topic': '/summit/color/image'},
+            {'camera_info_topic': '/summit/color/camera_info'},]
+    )
+
     tracker_node = Node(
         package='depthai_examples',
         executable='tracker_yolov4_spatial_node',
@@ -125,9 +157,9 @@ def generate_launch_description():
         emulate_tty=True,
     )
 
-    include_arm_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(arm_launch)
-    )
+    # include_arm_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(arm_launch)
+    # )
 
     # Optional: Rviz node
     rviz_node = Node(
@@ -138,10 +170,12 @@ def generate_launch_description():
     )
 
     return LaunchDescription(launch_args + [
-        include_arm_launch,
-        tf_pub_node,
-        roboflow_node,
+        # include_arm_launch,
+        # tf_pub_node,
+        # roboflow_node,
         tracker_node,
         person_detect_node,
         #rviz_node
+        # ray_water,
+        # pixel_pub
     ])
