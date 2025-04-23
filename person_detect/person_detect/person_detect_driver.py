@@ -23,6 +23,7 @@ class PersonDetectDriver(Node):
         super().__init__('person_detect_driver')
 
         self.t = None
+        self.j = 0
 
         self.time = rclpy.time.Time()
 
@@ -95,7 +96,7 @@ class PersonDetectDriver(Node):
                     marker.header.frame_id = "map" 
                     marker.header.stamp = msg.header.stamp
                     marker.ns = "person"
-                    marker.id = 0
+                    marker.id = self.j
                     marker.type = Marker.SPHERE 
                     marker.action = Marker.ADD
 
@@ -125,6 +126,9 @@ class PersonDetectDriver(Node):
                     self.marker_pub.publish(marker)
 
                     # print("bbox: size: x", bbox_size_x, ", y: ", bbox_size_y)
+
+                    self.j += 1
+
 
 def main(args=None):
     rclpy.init(args=args)
