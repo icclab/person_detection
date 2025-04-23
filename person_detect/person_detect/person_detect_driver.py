@@ -119,6 +119,7 @@ class PersonDetectDriver(Node):
                         marker.color.b = 0.0
 
                     marker.color.a = 1.0
+                    marker.lifetime = rclpy.duration.Duration(seconds= 10.0 * 60.0)
                     self.marker_pub.publish(marker)
 
                     # print("bbox: size: x", bbox_size_x, ", y: ", bbox_size_y)
