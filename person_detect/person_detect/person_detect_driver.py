@@ -15,6 +15,8 @@ from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 from visualization_msgs.msg import Marker
 
+from builtin_interfaces.msg import Duration
+
 class PersonDetectDriver(Node):
 
     def __init__(self):
@@ -48,16 +50,16 @@ class PersonDetectDriver(Node):
         
         self.t = TransformStamped()
         
-        try:
-            self.t = self.tf_buffer.lookup_transform(
-                self.to_frame_rel, self.from_frame_rel, rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=5.0)
-            )
+        # try:
+        #     self.t = self.tf_buffer.lookup_transform(
+        #         self.to_frame_rel, self.from_frame_rel, rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=5.0)
+        #     )
 
 
-        except TransformException as ex:
-            self.get_logger().info(
-                f'Could not transform {self.from_frame_rel} to {self.to_frame_rel}: {ex}')
-            return
+        # except TransformException as ex:
+        #     self.get_logger().info(
+        #         f'Could not transform {self.from_frame_rel} to {self.to_frame_rel}: {ex}')
+        #     return
 
     def tracking_callback(self, msg):
 
@@ -119,7 +121,7 @@ class PersonDetectDriver(Node):
                         marker.color.b = 0.0
 
                     marker.color.a = 1.0
-                    marker.lifetime = rclpy.duration.Duration(seconds= 10.0 * 60.0)
+                    marker.lifetime = Duration(sec=10*60, nanosec=0)  # 10 minutes
                     self.marker_pub.publish(marker)
 
                     # print("bbox: size: x", bbox_size_x, ", y: ", bbox_size_y)
