@@ -1,0 +1,28 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      # i_nn_type: spatial
+      i_pipeline_type: RGB
+      i_enable_imu: false
+    rgb:
+      # image_raw:
+      #   disable_pub_plugins: 'image_transport/compressed'
+      i_publish_topic: true
+      i_publish_compressed: false
+      i_fps: 1.0
+      # i_fps: 30.0
+      # i_low_bandwidth: true
+      # i_disable_node: true
+      # i_simulate_from_topic: true
+      # i_enable_nn: false
+    stereo:
+      # i_subpixel: false
+      i_publish_compressed: false
+      # i_low_bandwidth: true
+      i_publish_topic: false
+    pipeline_gen:
+      i_enable_imu: false
+    # nn:
+    #   i_nn_config_path: depthai_ros_driver/mobilenet
+      # i_nn_config_path: depthai_ros_driver/yolo

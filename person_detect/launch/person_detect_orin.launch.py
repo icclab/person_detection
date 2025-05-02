@@ -94,6 +94,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription(launch_args + [
-        tracker_node,
+        # tracker_node,
         person_detect_node,
     ])

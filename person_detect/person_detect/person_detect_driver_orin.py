@@ -14,6 +14,7 @@ import tf2_geometry_msgs
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 from visualization_msgs.msg import Marker
+from vision_msgs.msg import Detection3DArray
 
 from builtin_interfaces.msg import Duration
 
@@ -26,13 +27,19 @@ class PersonDetectDriverOrin(Node):
 
         self.marker_pub = self.create_publisher(Marker, '/orin/person_marker', 10)
 
+        # self.subscription = self.create_subscription(
+        #     TrackDetection2DArray,
+        #     '/orin/color/yolov4_Spatial_tracklets',
+        #     self.tracking_callback,
+        #     10
+        # )
+
         self.subscription = self.create_subscription(
-            TrackDetection2DArray,
-            '/orin/color/yolov4_Spatial_tracklets',
+            Detection3DArray,
+            '/oak/nn/spatial_detections',
             self.tracking_callback,
             10
         )
-
     def tracking_callback(self, msg):
 
         for i, detection in enumerate(msg.detections):
@@ -41,14 +48,17 @@ class PersonDetectDriverOrin(Node):
             # in mm
             bbox_center_x = bbox.center.position.x
             bbox_center_y = bbox.center.position.y
-            bbox_size_x = bbox.size_x
-            bbox_size_y = bbox.size_y
+            bbox_center_z = bbox.center.position.z
+            
+            bbox_size_x = bbox.size.x
+            bbox_size_y = bbox.size.y
+            bbox_size_z = bbox.size.z
 
             results = detection.results
-            is_tracking = detection.is_tracking
-            tracking_id = detection.tracking_id
-            tracking_age = detection.tracking_age
-            tracking_status = detection.tracking_status
+            # is_tracking = detection.is_tracking
+            # tracking_id = detection.tracking_id
+            # tracking_age = detection.tracking_age
+            # tracking_status = detection.tracking_status
 
             for hyp in results:
                 if int(hyp.hypothesis.class_id) == 0:

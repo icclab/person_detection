@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    camera:
+      i_enable_imu: true
+      i_enable_ir: true
+      i_nn_type: spatial
+      i_pipeline_type: RGBD
+    nn:
+      # i_nn_config_path: depthai_ros_driver/mobilenet
+      i_nn_config_path: depthai_ros_driver/yolo
+      i_disable_resize: false
+    rgb:
+      i_preview_size: 416
