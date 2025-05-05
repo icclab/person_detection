@@ -22,8 +22,8 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='person_detect_driver_tinyv4',
-            name='yolov4_tiny_node',
+            executable='person_detect_yolo_v4_pub',
+            name='yolov4_tiny_node_pub',
             namespace='oak',
             parameters=[{"use_sim_time": False}],
             output='screen',

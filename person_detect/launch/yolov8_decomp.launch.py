@@ -22,7 +22,7 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='person_detect_yolo_pub',
+            executable='person_detect_yolo_v8_pub',
             name='yolov8n_pub_node',
             namespace='oak',
             parameters=[{"use_sim_time": False}],

@@ -19,7 +19,7 @@ class YoloV8nNode(Node):
         qos = QoSProfile(
             depth=10,
             reliability=ReliabilityPolicy.RELIABLE
-)
+        )
         self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw/decompressed', self.listener_callback, qos)
         self.bridge = CvBridge()
         self.model = YOLO("yolov8n.pt")
