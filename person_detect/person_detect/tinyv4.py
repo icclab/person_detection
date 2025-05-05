@@ -64,8 +64,8 @@ class YoloV4TinyNode(Node):
         # fps = 1 / (end - start)
         # self.get_logger().info(f"[YOLOv4-tiny] FPS: {fps:.2f}")
 
-        class_id = None
-        confidence = 0
+        class_name = None
+        conf = 0
         # Extract detections
         height, width = frame.shape[:2]
         for output in outputs:
@@ -75,12 +75,13 @@ class YoloV4TinyNode(Node):
                 if class_id == 0:
                     confidence = scores[class_id]
                     if confidence > self.conf_threshold:
+                        conf = float(confidence)
                         class_name = self.class_names[class_id]
                         self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
 
         unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J = self.tegrastats_logger.log_tegrastats()
 
-        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, class_name, end - start, confidence * 100])
+        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, class_name, end - start, conf * 100])
         self.csvfile.flush()
 
     def __del__(self):
