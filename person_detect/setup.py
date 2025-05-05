@@ -38,6 +38,7 @@ setup(
             'person_detect_driver_tinyv4 = person_detect.tinyv4:main',
             'person_detect_yolo_v8_pub = person_detect.person_detect_yolo_v8_pub:main',
             'person_detect_yolo_v4_pub = person_detect.tinyv4_pub:main',
+            'person_detect_yolo_sub = person_detect.person_detect_tegrastats_sub:main',
         ],
     },
 )
