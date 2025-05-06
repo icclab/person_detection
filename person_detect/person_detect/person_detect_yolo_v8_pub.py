@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import time
 from ultralytics import YOLO
@@ -10,6 +10,7 @@ import csv
 from datetime import datetime
 from detections_msg.msg import Detections
 from rclpy.qos import QoSProfile, ReliabilityPolicy
+from rclpy.executors import MultiThreadedExecutor
 
 
 class YoloV8nNode(Node):
@@ -21,11 +22,13 @@ class YoloV8nNode(Node):
             reliability=ReliabilityPolicy.RELIABLE
         )
         self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw/decompressed', self.listener_callback, qos)
+        self.subscription2 = self.create_subscription(CompressedImage, '/oak/rgb/image_raw/dynamic/compressed', self.listener_callback2, qos)
         self.bridge = CvBridge()
         self.model = YOLO("yolov8n.pt")
         self.model.fuse()
         
         self.conf_threshold = 0.5
+        self.payload = 0
 
         self.publisher_ = self.create_publisher(Detections, '/oak/yolo/detections', 10)
         
@@ -44,7 +47,7 @@ class YoloV8nNode(Node):
         # torch.cuda.empty_cache()
 
         conf = 0
-        label = None
+        label = "None"
         # Process predictions
         for result in results:
             for box in result.boxes:
@@ -54,20 +57,35 @@ class YoloV8nNode(Node):
                     conf = float(box.conf[0])
                     if conf > self.conf_threshold:
                         label = self.model.names[cls_id]
-
-                        detections_msg = Detections()
-                        detections_msg.class_id = label
-                        detections_msg.inference_time_s = end - start
-                        detections_msg.accuracy_percent = conf * 100
-                        detections_msg.payload = len(msg.data)
-                        self.publisher_.publish(detections_msg)
-                        
                         self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
 
+        detections_msg = Detections()
+        detections_msg.class_id = label
+        detections_msg.inference_time_s = end - start
+        detections_msg.accuracy_percent = conf * 100
+        detections_msg.payload_bytes = self.payload 
+        self.publisher_.publish(detections_msg)
+
+    def listener_callback2(self, msg):
+        # self.get_logger().info("Received compressed image")
+        self.payload = len(msg.data)
+
+# def main(args=None):
+#     rclpy.init(args=args)
+#     node = YoloV8nNode()
+#     rclpy.spin(node)
+#     node.destroy_node()
+#     rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
     node = YoloV8nNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+
+    try:
+        executor.spin()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
