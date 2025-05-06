@@ -39,15 +39,15 @@ class YoloV8nNode(Node):
         self.tegrastats_logger = TegrastatsLogger()
         
     def listener_callback(self, msg):
-        self.get_logger().info("Received yolo_v8n detection message")
+        self.get_logger().info("Received yolo detection message")
 
         Detections_msg = Detections()
         Detections_msg.class_id = msg.class_id
         Detections_msg.inference_time_s = msg.inference_time_s
         Detections_msg.accuracy_percent = msg.accuracy_percent
-        self.get_logger().info(f"[YOLOv8n] CLASS ID: {Detections_msg.class_id}")
-        self.get_logger().info(f"[YOLOv8n] INFERENCE TIME: {Detections_msg.inference_time_s:.2f} sec")
-        self.get_logger().info(f"[YOLOv8n] ACCURACY: {Detections_msg.accuracy_percent:.2f} %")
+        self.get_logger().info(f"[YOLO] CLASS ID: {Detections_msg.class_id}")
+        self.get_logger().info(f"[YOLO] INFERENCE TIME: {Detections_msg.inference_time_s:.2f} sec")
+        self.get_logger().info(f"[YOLO] ACCURACY: {Detections_msg.accuracy_percent:.2f} %")
 
         unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J = self.tegrastats_logger.log_tegrastats()
 
