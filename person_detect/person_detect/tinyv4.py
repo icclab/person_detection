@@ -41,8 +41,19 @@ class YoloV4TinyNode(Node):
 
         self.net = cv2.dnn.readNetFromDarknet(cfg_path, weights_path)
         
-        self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-        self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+        self.cuda = False
+        
+        if self.cuda:       
+            self.get_logger().info("Using CUDA for inference")
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+            # self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA_FP16)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+
+        else:   
+            self.get_logger().info("Using CPU for inference")
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+            # self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU_FP16)
         
         names_path = os.path.join(
             get_package_share_directory('person_detect'),

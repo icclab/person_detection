@@ -17,6 +17,7 @@ class YoloV8nNode(Node):
         self.bridge = CvBridge()
         self.model = YOLO("yolov8n.pt")
         self.model.fuse()
+        self.cuda = True
 
         self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
         self.output_file = f"tegrastats_yolo_v8_{self.start_time_str}.csv"
@@ -35,9 +36,17 @@ class YoloV8nNode(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
         start = time.time()
-        results = self.model.predict(frame, imgsz=640, device='cpu', verbose=False)
-        # results = self.model.predict(frame, imgsz=640, device='cuda', verbose=False)
+        
+        if self.cuda:
+            self.get_logger().info("Using CUDA for inference")
+            results = self.model.predict(frame, imgsz=640, device='cuda', verbose=False)
+
+        else:
+            self.get_logger().info("Using CPU for inference")
+            results = self.model.predict(frame, imgsz=640, device='cpu', verbose=False)
+        
         end = time.time()
+        
         # fps = 1 / (end - start)
         # self.get_logger().info(f"[YOLOv8n] FPS: {fps:.2f}")
 
