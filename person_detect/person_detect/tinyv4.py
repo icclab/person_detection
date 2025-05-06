@@ -54,6 +54,9 @@ class YoloV4TinyNode(Node):
             self.class_names = f.read().strip().split("\n")
 
     def listener_callback(self, msg):
+        
+        self.get_logger().info("Received image")
+
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
         self.net.setInput(blob)
@@ -66,6 +69,7 @@ class YoloV4TinyNode(Node):
 
         class_name = None
         conf = 0
+        max_conf = 0
         # Extract detections
         height, width = frame.shape[:2]
         for output in outputs:
@@ -76,12 +80,17 @@ class YoloV4TinyNode(Node):
                     confidence = scores[class_id]
                     if confidence > self.conf_threshold:
                         conf = float(confidence)
+                        if conf > max_conf:
+                            max_conf = conf 
+
                         class_name = self.class_names[class_id]
-                        self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
+                        # self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
+
+        self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
         unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J = self.tegrastats_logger.log_tegrastats()
 
-        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, class_name, end - start, conf * 100])
+        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, class_name, end - start, max_conf * 100])
         self.csvfile.flush()
 
     def __del__(self):

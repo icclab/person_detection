@@ -64,6 +64,7 @@ class YoloV4TinyNode(Node):
 
         class_name = None
         conf = 0
+        max_conf = 0
         # Extract detections
         height, width = frame.shape[:2]
         for output in outputs:
@@ -74,6 +75,10 @@ class YoloV4TinyNode(Node):
                     confidence = scores[class_id]
                     if confidence > self.conf_threshold:
                         conf = float(confidence)
+                        conf = float(confidence)
+                        if conf > max_conf:
+                            max_conf = conf 
+
                         class_name = self.class_names[class_id]
 
                         detections_msg = Detections()
@@ -82,7 +87,10 @@ class YoloV4TinyNode(Node):
                         detections_msg.accuracy_percent = conf * 100
                         self.publisher_.publish(detections_msg)
 
-                        self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
+                        # self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
+
+        self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
+
 
     def __del__(self):
         if self.csvfile:
