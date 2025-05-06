@@ -84,7 +84,8 @@ class YoloV4TinyNode(Node):
                         detections_msg = Detections()
                         detections_msg.class_id = class_name
                         detections_msg.inference_time_s = end - start
-                        detections_msg.accuracy_percent = conf * 100
+                        detections_msg.accuracy_percent = max_conf * 100
+                        detections_msg.payload = len(msg.data)
                         self.publisher_.publish(detections_msg)
 
                         # self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")

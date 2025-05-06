@@ -24,7 +24,7 @@ class YoloV8nNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "class_id", "inference_time_sec", "accuracy_in_percent"])
+        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "class_id", "inference_time_sec", "accuracy_in_percent", "msg_payload_size"])
         self.csvfile.flush()
         
         self.conf_threshold = 0.5
@@ -67,7 +67,7 @@ class YoloV8nNode(Node):
 
         unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J = self.tegrastats_logger.log_tegrastats()
 
-        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, label, end - start, conf * 100])
+        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, label, end - start, conf * 100, len(msg.data)])
         self.csvfile.flush()
 
     def __del__(self):

@@ -59,6 +59,7 @@ class YoloV8nNode(Node):
                         detections_msg.class_id = label
                         detections_msg.inference_time_s = end - start
                         detections_msg.accuracy_percent = conf * 100
+                        detections_msg.payload = len(msg.data)
                         self.publisher_.publish(detections_msg)
                         
                         self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
