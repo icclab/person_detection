@@ -8,14 +8,12 @@ from rclpy.qos import qos_profile_sensor_data
 import torch
 import csv
 from datetime import datetime
-from detections_msg.msg import Detections
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.executors import MultiThreadedExecutor
 
-
 class YoloV8nNode(Node):
     def __init__(self):
-        super().__init__('yolov8n_pub_node')
+        super().__init__('yolov8n_node')
 
         qos = QoSProfile(
             depth=10,
@@ -26,11 +24,24 @@ class YoloV8nNode(Node):
         self.bridge = CvBridge()
         self.model = YOLO("yolov8n.pt")
         self.model.fuse()
+
+        self.declare_parameter("output_prefix", "yolo")
+
+        # Get prefix from param
+        prefix = self.get_parameter("output_prefix").get_parameter_value().string_value
+        
+        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
+        self.output_file = f"{prefix}_{self.start_time_str}.csv"
+
+        self.get_logger().info(f"Logging to: {self.output_file}")
+
+        self.csvfile = open(self.output_file, "w", newline='')
+        self.writer = csv.writer(self.csvfile)
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
+        self.csvfile.flush()
         
         self.conf_threshold = 0.5
         self.payload = 0
-
-        self.publisher_ = self.create_publisher(Detections, '/oak/yolo/detections', 10)
         
     def listener_callback(self, msg):
         self.get_logger().info("Received image")
@@ -38,14 +49,8 @@ class YoloV8nNode(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
         start = time.time()
-        results = self.model.predict(frame, imgsz=640, device='cpu', verbose=False)
-        # results = self.model.predict(frame, imgsz=640, device='cuda', verbose=False)
+        results = self.model.predict(frame, imgsz=640, device='cuda', verbose=False)
         end = time.time()
-        # fps = 1 / (end - start)
-        # self.get_logger().info(f"[YOLOv8n] FPS: {fps:.2f}")
-
-        # torch.cuda.empty_cache()
-
         conf = 0
         label = "None"
         # Process predictions
@@ -59,23 +64,16 @@ class YoloV8nNode(Node):
                         label = self.model.names[cls_id]
                         self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
 
-        detections_msg = Detections()
-        detections_msg.class_id = label
-        detections_msg.inference_time_s = end - start
-        detections_msg.accuracy_percent = conf * 100
-        detections_msg.payload_bytes = self.payload 
-        self.publisher_.publish(detections_msg)
+        self.writer.writerow([end, label, end - start, conf * 100, self.payload])
+        self.csvfile.flush()
 
     def listener_callback2(self, msg):
         # self.get_logger().info("Received compressed image")
         self.payload = len(msg.data)
 
-# def main(args=None):
-#     rclpy.init(args=args)
-#     node = YoloV8nNode()
-#     rclpy.spin(node)
-#     node.destroy_node()
-#     rclpy.shutdown()
+    def __del__(self):
+        if self.csvfile:
+            self.csvfile.close()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -89,3 +87,6 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

@@ -34,11 +34,9 @@ setup(
             'person_detect = person_detect.person_detect:main',
             'person_detect_driver = person_detect.person_detect_driver:main',
             'person_detect_driver_orin = person_detect.person_detect_driver_orin:main',
-            'person_detect_driver_v8 = person_detect.v8:main',
             'person_detect_driver_tinyv4 = person_detect.tinyv4:main',
-            'person_detect_yolo_v8_pub = person_detect.person_detect_yolo_v8_pub:main',
-            'person_detect_yolo_v4_pub = person_detect.tinyv4_pub:main',
-            'person_detect_yolo_sub = person_detect.person_detect_tegrastats_sub:main',
+            'yolo_v8_rap = person_detect.yolo_v8_rap:main',
+            'log_tegrastats = person_detect.log_tegrastats:main',
         ],
     },
 )

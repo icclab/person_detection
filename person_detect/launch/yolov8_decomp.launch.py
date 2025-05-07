@@ -22,12 +22,14 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='person_detect_yolo_v8_pub',
-            name='yolov8n_pub_node',
+            executable='yolo_v8_rap',
+            name='yolov8n_node',
             namespace='oak',
-            parameters=[{"use_sim_time": False}],
+            parameters=[
+                {"use_sim_time": False},
+                {"output_prefix": 'yolo_v8'},
+            ],
             output='screen',
-            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
             emulate_tty=True,
-        ),
+        ),  
     ])

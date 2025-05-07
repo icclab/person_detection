@@ -6,7 +6,6 @@ import cv2, time
 import os
 import csv
 import numpy as np
-from .log_tegrastats import TegrastatsLogger
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -16,7 +15,6 @@ class YoloV4TinyNode(Node):
         self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback, 10)
         self.bridge = CvBridge()
         self.conf_threshold = 0.5
-        self.tegrastats_logger = TegrastatsLogger()
 
         cfg_path = os.path.join(
             get_package_share_directory('person_detect'),
@@ -30,18 +28,16 @@ class YoloV4TinyNode(Node):
         )
 
         self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"tegrastats_tiny_yolo_v4_{self.start_time_str}.csv"
+        self.output_file = f"tiny_yolo_v4_{self.start_time_str}.csv"
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "class_id", "inference_time_sec", "accuracy_in_percent"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
         self.csvfile.flush()
-
-        # self.net = cv2.dnn.readNetFromDarknet('/home/icc-nano/energy_ws/src/test_yolo/testyolo/cfg/yolov4-tiny.cfg', '/home/icc-nano/energy_ws/src/test_yolo/testyolo/weights/yolov4-tiny.weights')
 
         self.net = cv2.dnn.readNetFromDarknet(cfg_path, weights_path)
         
-        self.cuda = False
+        self.cuda = True
         
         if self.cuda:       
             self.get_logger().info("Using CUDA for inference")
@@ -75,10 +71,8 @@ class YoloV4TinyNode(Node):
         start = time.time()
         outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
         end = time.time()
-        # fps = 1 / (end - start)
-        # self.get_logger().info(f"[YOLOv4-tiny] FPS: {fps:.2f}")
 
-        class_name = None
+        class_name = "None"
         conf = 0
         max_conf = 0
         # Extract detections
@@ -95,19 +89,15 @@ class YoloV4TinyNode(Node):
                             max_conf = conf 
 
                         class_name = self.class_names[class_id]
-                        # self.get_logger().info(f"Detected {class_name} with confidence {confidence:.2f}")
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
-        unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J = self.tegrastats_logger.log_tegrastats()
-
-        self.writer.writerow([unix_time, instantaneous_mW, average_mW, energy_J, energy_total_J, class_name, end - start, max_conf * 100])
+        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data)])
         self.csvfile.flush()
 
     def __del__(self):
         if self.csvfile:
             self.csvfile.close()
-        self.tegrastats_logger.close()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -115,3 +105,6 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

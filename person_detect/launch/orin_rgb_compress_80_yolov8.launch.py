@@ -37,15 +37,12 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='person_detect_yolo_sub',
-            name='yolo_node_sub',
+            executable='log_tegrastats',
+            name='tegrastats_node',
             namespace='oak',
-            parameters=[
-                {"use_sim_time": False},
-                {"output_prefix": 'tegrastats_yolo_v8'},
-                {"compress": compress_level}
-            ],
+            parameters=[{"use_sim_time": False}],
             output='screen',
+            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
             emulate_tty=True,
-        ),  
+        ),
     ])
