@@ -1,41 +1,40 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import cv2, time
 import os
-import csv
 import numpy as np
-
+from rclpy.qos import QoSProfile, ReliabilityPolicy
+from detections_msg.msg import Detections
+from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
-class YoloV4TinyNode(Node):
+class YoloV4Node(Node):
     def __init__(self):
-        super().__init__('yolov4_tiny_node')
-        self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback, 10)
+        super().__init__('yolov4_node')
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE
+        )
+        self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw/decompressed', self.listener_callback, qos)
+        self.subscription2 = self.create_subscription(CompressedImage, '/oak/rgb/image_raw/dynamic/compressed', self.listener_callback2, qos)
         self.bridge = CvBridge()
         self.conf_threshold = 0.5
+        self.payload = 0
+
+        self.publisher_ = self.create_publisher(Detections, '/oak/yolo/detections', 10)
 
         cfg_path = os.path.join(
             get_package_share_directory('person_detect'),
             'launch',
-            'yolov4-tiny.cfg'
+            'yolov4.cfg'
         )
         weights_path = os.path.join(
             get_package_share_directory('person_detect'),
             'launch',
-            'yolov4-tiny.weights'
+            'yolov4.weights'
         )
-
-        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"tiny_yolo_v4_{self.start_time_str}.csv"
-
-        self.csvfile = open(self.output_file, "w", newline='')
-        self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
-        self.csvfile.flush()
-
-        self.get_logger().info(f"Logging to: {self.output_file}")
 
         self.net = cv2.dnn.readNetFromDarknet(cfg_path, weights_path)
         
@@ -92,21 +91,31 @@ class YoloV4TinyNode(Node):
 
                         class_name = self.class_names[class_id]
 
+        detections_msg = Detections()
+        detections_msg.class_id = class_name
+        detections_msg.inference_time_s = end - start
+        detections_msg.accuracy_percent = conf * 100
+        detections_msg.payload_bytes = self.payload
+        self.publisher_.publish(detections_msg)
+
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
-        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data)])
-        self.csvfile.flush()
-
-    def __del__(self):
-        if self.csvfile:
-            self.csvfile.close()
+    def listener_callback2(self, msg):
+        # self.get_logger().info("Received compressed image")
+        self.payload = len(msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
-    node = YoloV4TinyNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    node = YoloV4Node()
+
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+
+    try:
+        executor.spin()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

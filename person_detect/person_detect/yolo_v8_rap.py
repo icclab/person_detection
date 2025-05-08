@@ -2,14 +2,14 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
-import time
 from ultralytics import YOLO
 from rclpy.qos import qos_profile_sensor_data
 import torch
-import csv
+import time
 from datetime import datetime
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.executors import MultiThreadedExecutor
+from detections_msg.msg import Detections
 
 class YoloV8nNode(Node):
     def __init__(self):
@@ -25,23 +25,10 @@ class YoloV8nNode(Node):
         self.model = YOLO("yolov8n.pt")
         self.model.fuse()
 
-        self.declare_parameter("output_prefix", "yolo")
-
-        # Get prefix from param
-        prefix = self.get_parameter("output_prefix").get_parameter_value().string_value
-        
-        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"{prefix}_{self.start_time_str}.csv"
-
-        self.get_logger().info(f"Logging to: {self.output_file}")
-
-        self.csvfile = open(self.output_file, "w", newline='')
-        self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
-        self.csvfile.flush()
-        
         self.conf_threshold = 0.5
         self.payload = 0
+
+        self.publisher_ = self.create_publisher(Detections, '/oak/yolo/detections', 10)
         
     def listener_callback(self, msg):
         self.get_logger().info("Received image")
@@ -62,10 +49,17 @@ class YoloV8nNode(Node):
                     conf = float(box.conf[0])
                     if conf > self.conf_threshold:
                         label = self.model.names[cls_id]
-                        self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
+        
+        self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
 
-        self.writer.writerow([end, label, end - start, conf * 100, self.payload])
-        self.csvfile.flush()
+        detections_msg = Detections()
+        detections_msg.class_id = label
+        detections_msg.inference_time_s = end - start
+        detections_msg.accuracy_percent = conf * 100
+        detections_msg.payload_bytes = self.payload
+        self.publisher_.publish(detections_msg)
+        
+        self.get_logger().info(f"Detected {label} with confidence {conf:.2f}")
 
     def listener_callback2(self, msg):
         # self.get_logger().info("Received compressed image")

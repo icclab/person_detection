@@ -12,8 +12,8 @@ class TegrastatsLogger(Node):
     def __init__(self):
         super().__init__('tegrastats_node')
         # Start tegrastats
-        # interval_ms = 100
-        interval_ms = 1000
+        interval_ms = 100
+        # interval_ms = 1000
         self.get_logger().info(f"Starting tegrastats with interval {interval_ms} ms")
         self.proc = subprocess.Popen(["tegrastats", "--interval", str(interval_ms)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
 
@@ -32,9 +32,24 @@ class TegrastatsLogger(Node):
         self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
         self.output_file = f"tegrastats_{self.start_time_str}.csv"
 
+        # ==== Battery Configuration ====
+        self.capacity_Ah = 5  # 5000 mAh
+        self.voltage_max = 16.6 # 4.15V * 4
+        self.voltage_min = 12.8  # 3.2V * 4
+        self.use_conservative = False  # Use 80% of total battery to protect lifespan
+
+        self.battery_pct = 100
+        
+        # ==== Compute usable energy (Joules) ====
+        self.average_voltage = (self.voltage_max + self.voltage_min) / 2
+        self.usable_energy_joules = self.average_voltage * self.capacity_Ah * 3600  # Wh to J
+        
+        if self.use_conservative:
+            self.usable_energy_joules *= 0.8
+
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "sent_rate_Bps", "recv_rate_Bps"])
+        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "sent_rate_Bps", "recv_rate_Bps", "battery_pct"])
         self.csvfile.flush()
 
     def log_tegrastats(self):
@@ -65,7 +80,7 @@ class TegrastatsLogger(Node):
                 self.old_sent = old.bytes_sent
                 self.old_recv = old.bytes_recv
 
-                self.writer.writerow([self.prev_unix_time, self.prev_instantaneous_mW, self.prev_average_mW, self.energy_J, self.energy_total_J])
+                self.writer.writerow([self.prev_unix_time, self.prev_instantaneous_mW, self.prev_average_mW, self.energy_J, self.energy_total_J, 0, 0, self.battery_pct])
 
                 self.i = False
             
@@ -96,7 +111,11 @@ class TegrastatsLogger(Node):
             sent_rate = (new_sent - self.old_sent) / elapsed_sec
             recv_rate = (new_recv - self.old_recv) / elapsed_sec
 
-            self.writer.writerow([unix_time, instantaneous_mW, average_mW, self.energy_J, self.energy_total_J, sent_rate, recv_rate])
+            self.battery_pct = 100 * (1 - self.energy_total_J / self.usable_energy_joules)
+
+            self.battery_pct = max(self.battery_pct, 0)  # Clamp at 0
+
+            self.writer.writerow([unix_time, instantaneous_mW, average_mW, self.energy_J, self.energy_total_J, sent_rate, recv_rate, self.battery_pct])
 
             print(f"unix_time: {unix_time}")
             print(f"Instantaneous VDD_IN: {instantaneous_mW} mW")
@@ -110,6 +129,9 @@ class TegrastatsLogger(Node):
             print("new_recv: ", new_recv)
             print("old_recv: ", self.old_recv)
             print("recv_rate: ", recv_rate)
+            print("energy_total_J: ", self.energy_total_J)
+            print("usable_energy_joules: ", self.usable_energy_joules)
+            print("battery_pct: ", self.battery_pct)
             
             self.prev_instantaneous_mW = instantaneous_mW
             self.prev_unix_time = unix_time
