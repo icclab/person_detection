@@ -20,7 +20,7 @@ class YoloV8nNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -28,16 +28,13 @@ class YoloV8nNode(Node):
     def listener_callback(self, msg):
         self.get_logger().info("Received yolo detection message")
 
-        Detections_msg = Detections()
-        Detections_msg.class_id = msg.class_id
-        Detections_msg.inference_time_s = msg.inference_time_s
-        Detections_msg.accuracy_percent = msg.accuracy_percent
-        self.get_logger().info(f"[YOLO] CLASS ID: {Detections_msg.class_id}")
-        self.get_logger().info(f"[YOLO] INFERENCE TIME: {Detections_msg.inference_time_s:.2f} sec")
-        self.get_logger().info(f"[YOLO] ACCURACY: {Detections_msg.accuracy_percent:.2f} %")
+        self.get_logger().info(f"[YOLO] CLASS ID: {msg.class_id}")
+        self.get_logger().info(f"[YOLO] INFERENCE TIME: {msg.inference_time_s:.2f} sec")
+        self.get_logger().info(f"[YOLO] ACCURACY: {msg.accuracy_percent:.2f} %")
         self.get_logger().info(f"[YOLO] PAYLOAD SIZE: {msg.payload_bytes} bytes")
-
-        self.writer.writerow([time.time(), msg.class_id, msg.inference_time_s, msg.accuracy_percent, msg.payload_bytes])
+        self.get_logger().info(f"[YOLO] CUDA: {msg.cuda}")
+        
+        self.writer.writerow([time.time(), msg.class_id, msg.inference_time_s, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
         self.csvfile.flush()
 
     def __del__(self):

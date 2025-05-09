@@ -27,21 +27,13 @@ class YoloV4TinyNode(Node):
             'yolov4-tiny.weights'
         )
 
-        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"tiny_yolo_v4_{self.start_time_str}.csv"
-
-        self.csvfile = open(self.output_file, "w", newline='')
-        self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes"])
-        self.csvfile.flush()
-
-        self.get_logger().info(f"Logging to: {self.output_file}")
-
         self.net = cv2.dnn.readNetFromDarknet(cfg_path, weights_path)
-        
-        self.cuda = True
-        
-        if self.cuda:       
+
+        self.declare_parameter("use_cuda", True)
+
+        self.use_cuda = self.get_parameter("use_cuda").get_parameter_value().bool_value
+
+        if self.use_cuda:       
             self.get_logger().info("Using CUDA for inference")
             self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
             # self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA_FP16)
@@ -53,6 +45,16 @@ class YoloV4TinyNode(Node):
             self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
             # self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU_FP16)
         
+        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
+        self.output_file = f"tiny_yolo_v4_{self.start_time_str}.csv"
+
+        self.csvfile = open(self.output_file, "w", newline='')
+        self.writer = csv.writer(self.csvfile)
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda"])
+        self.csvfile.flush()
+
+        self.get_logger().info(f"Logging to: {self.output_file}")
+
         names_path = os.path.join(
             get_package_share_directory('person_detect'),
             'config',
@@ -94,7 +96,7 @@ class YoloV4TinyNode(Node):
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
-        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data)])
+        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda])
         self.csvfile.flush()
 
     def __del__(self):

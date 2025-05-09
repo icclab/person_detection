@@ -38,9 +38,11 @@ class YoloV4Node(Node):
 
         self.net = cv2.dnn.readNetFromDarknet(cfg_path, weights_path)
         
-        self.cuda = True
+        self.declare_parameter("use_cuda", True)
+
+        self.use_cuda = self.get_parameter("use_cuda").get_parameter_value().bool_value
         
-        if self.cuda:       
+        if self.use_cuda:       
             self.get_logger().info("Using CUDA for inference")
             self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
             # self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA_FP16)
@@ -96,6 +98,7 @@ class YoloV4Node(Node):
         detections_msg.inference_time_s = end - start
         detections_msg.accuracy_percent = conf * 100
         detections_msg.payload_bytes = self.payload
+        detections_msg.cuda = self.use_cuda
         self.publisher_.publish(detections_msg)
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")

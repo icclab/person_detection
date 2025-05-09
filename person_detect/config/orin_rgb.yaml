@@ -10,8 +10,9 @@
       #   disable_pub_plugins: 'image_transport/compressed'
       i_publish_topic: true
       i_publish_compressed: false
-      i_fps: 1.0
-      # i_fps: 30.0
+      # i_fps: 1.0
+      # i_fps: 5.0
+      i_fps: 10.0
       # i_low_bandwidth: true
       # i_disable_node: true
       # i_simulate_from_topic: true
