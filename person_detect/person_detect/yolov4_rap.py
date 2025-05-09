@@ -94,6 +94,7 @@ class YoloV4Node(Node):
                         class_name = self.class_names[class_id]
 
         detections_msg = Detections()
+        detections_msg.header.stamp = msg.header.stamp
         detections_msg.class_id = class_name
         detections_msg.inference_time_s = end - start
         detections_msg.accuracy_percent = conf * 100

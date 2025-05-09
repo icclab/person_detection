@@ -34,7 +34,12 @@ class YoloV8nNode(Node):
         self.get_logger().info(f"[YOLO] PAYLOAD SIZE: {msg.payload_bytes} bytes")
         self.get_logger().info(f"[YOLO] CUDA: {msg.cuda}")
         
-        self.writer.writerow([time.time(), msg.class_id, msg.inference_time_s, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+        # self.writer.writerow([time.time(), msg.class_id, msg.inference_time_s, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+
+        new_inference_time = time.time() - (msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9) 
+
+        self.writer.writerow([time.time(), msg.class_id, new_inference_time, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+        
         self.csvfile.flush()
 
     def __del__(self):
