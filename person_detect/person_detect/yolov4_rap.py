@@ -71,9 +71,7 @@ class YoloV4Node(Node):
         blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
         self.net.setInput(blob)
 
-        start = time.time()
         outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
-        end = time.time()
 
         class_name = "None"
         conf = 0
@@ -96,7 +94,6 @@ class YoloV4Node(Node):
         detections_msg = Detections()
         detections_msg.header.stamp = msg.header.stamp
         detections_msg.class_id = class_name
-        detections_msg.inference_time_s = end - start
         detections_msg.accuracy_percent = conf * 100
         detections_msg.payload_bytes = self.payload
         detections_msg.cuda = self.use_cuda

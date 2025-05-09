@@ -34,31 +34,37 @@ class YoloV8nNode(Node):
 
         self.get_logger().info(f"Logging to: {self.output_file}")
 
-        self.t1 = 0
+        self.time_output_file = f"time_yolo_v4_{self.start_time_str}.csv"
 
+        self.time_file = open(self.time_output_file, "w", newline='')
+        self.time_writer = csv.writer(self.time_file)
+        self.time_writer.writerow(["image_raw_compressed_timestamp_sec"])
+        self.time_file.flush()
+
+        self.get_logger().info(f"Logging to: {self.time_output_file}")
+        
     def listener_callback2(self, msg):
-        self.t1 = time.time()
+        
+        self.time_writer.writerow([time.time()])
         
     def listener_callback(self, msg):
+
+        self.writer.writerow([time.time(), msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+
+        self.csvfile.flush()
+
         self.get_logger().info("Received yolo detection message")
 
         self.get_logger().info(f"[YOLO] CLASS ID: {msg.class_id}")
         self.get_logger().info(f"[YOLO] ACCURACY: {msg.accuracy_percent:.2f} %")
         self.get_logger().info(f"[YOLO] PAYLOAD SIZE: {msg.payload_bytes} bytes")
         self.get_logger().info(f"[YOLO] CUDA: {msg.cuda}")
-        
-        # self.writer.writerow([time.time(), msg.class_id, msg.inference_time_s, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
-
-        new_inference_time = time.time() - self.t1
-        self.get_logger().info(f"[YOLO] INFERENCE TIME: {new_inference_time:.2f} sec")
-
-        self.writer.writerow([time.time(), msg.class_id, new_inference_time, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
-        
-        self.csvfile.flush()
 
     def __del__(self):
         if self.csvfile:
             self.csvfile.close()
+        if self.time_file:
+            self.time_file.close()
 
 def main(args=None):
     rclpy.init(args=args)
