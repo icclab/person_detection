@@ -49,7 +49,7 @@ class TegrastatsLogger(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "sent_rate_Bps", "recv_rate_Bps", "battery_pct"])
+        self.writer.writerow(["current_time_sec", "vdd_mW", "vdd_avg_mW", "energy_J", "energy_total_J", "sent_rate_Bps", "recv_rate_Bps", "battery_pct"])
         self.csvfile.flush()
 
     def log_tegrastats(self):
@@ -117,7 +117,7 @@ class TegrastatsLogger(Node):
 
             self.writer.writerow([unix_time, instantaneous_mW, average_mW, self.energy_J, self.energy_total_J, sent_rate, recv_rate, self.battery_pct])
 
-            print(f"unix_time: {unix_time}")
+            print(f"current_time_sec: {unix_time}")
             print(f"Instantaneous VDD_IN: {instantaneous_mW} mW")
             print("prev_instantaneous_mW:", self.prev_instantaneous_mW)
             print("average_power_mW: ", avg_power_mW)

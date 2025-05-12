@@ -22,14 +22,14 @@ class YoloV8nNode(Node):
         )
 
         self.subscription = self.create_subscription(Detections, '/oak/yolo/detections', self.listener_callback, 10)
-        self.subscription2 = self.create_subscription(CompressedImage, '/oak/rgb/image_raw/dynamic/compressed', self.listener_callback2, qos)
+        self.subscription2 = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback2, qos)
         
         self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
         self.output_file = f"yolo_v4_{self.start_time_str}.csv"
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda"])
+        self.writer.writerow(["image_raw_timestamp_nsec", "current_time_sec", "class_id", "accuracy_in_percent", "payload_bytes", "cuda"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -38,18 +38,21 @@ class YoloV8nNode(Node):
 
         self.time_file = open(self.time_output_file, "w", newline='')
         self.time_writer = csv.writer(self.time_file)
-        self.time_writer.writerow(["image_raw_compressed_timestamp_sec"])
+        self.time_writer.writerow(["image_raw_timestamp_nsec", "current_time_sec"])
         self.time_file.flush()
 
         self.get_logger().info(f"Logging to: {self.time_output_file}")
         
     def listener_callback2(self, msg):
         
-        self.time_writer.writerow([time.time()])
+        self.get_logger().warn("Image callback triggered")
+        msg_time_nsec = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
+        self.time_writer.writerow([msg_time_nsec, time.time()])
         
     def listener_callback(self, msg):
 
-        self.writer.writerow([time.time(), msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+        msg_time_nsec = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
+        self.writer.writerow([msg_time_nsec, time.time(), msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
 
         self.csvfile.flush()
 
