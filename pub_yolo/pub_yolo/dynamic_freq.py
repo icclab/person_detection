@@ -11,15 +11,14 @@ import math
 class ImagePublisher(Node):
     def __init__(self, image_folder, csv_file):
         super().__init__('image_publisher')
-        self.publisher = self.create_publisher(Image, 'camera/image_raw', 10)
+        self.publisher = self.create_publisher(Image, '/oak/rgb/image_raw', 10)
         self.bridge = CvBridge()
 
-        # Load 10 images
         self.image_files = sorted([
             os.path.join(image_folder, f)
             for f in os.listdir(image_folder)
             if f.endswith(('.jpg', '.png'))
-        ])[:10]  # limit to 10 images
+        ])
 
         if len(self.image_files) < 1:
             raise ValueError("No images.")
@@ -30,7 +29,7 @@ class ImagePublisher(Node):
         with open(csv_file, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                freq = math.floor(float(row['frequency(Hz)']))  # round down
+                freq = math.ceil(float(row['frequency(Hz)']))  # round down
                 if freq <= 0:
                     freq = 1  # default minimum frequency
                 self.frequencies.append(freq)
