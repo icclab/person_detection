@@ -21,6 +21,6 @@ setup(
     entry_points={
         'console_scripts': [
             'image_pub = pub_yolo.image_pub:main',
-        ],
+            'dynamic_freq = pub_yolo.dynamic_freq:main',],
     },
 )
