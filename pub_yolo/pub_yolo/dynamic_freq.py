@@ -21,8 +21,9 @@ class ImagePublisher(Node):
             if f.endswith(('.jpg', '.png'))
         ])[:10]  # limit to 10 images
 
-        if len(self.image_files) < 10:
-            raise ValueError("You must have at least 10 images.")
+        if len(self.image_files) < 1:
+            raise ValueError("No images.")
+        self.total_images = len(self.image_files)
 
         # Read frequency list
         self.frequencies = []
@@ -36,6 +37,7 @@ class ImagePublisher(Node):
 
         self.current_freq_index = 0
         self.image_index = 0
+        self.images_published_in_current_block = 0
 
         # Start publishing the first frequency block
         self.start_frequency_block()
@@ -48,28 +50,30 @@ class ImagePublisher(Node):
 
         self.current_freq = self.frequencies[self.current_freq_index]
         self.delay = 1.0 / self.current_freq
-        self.image_index = 0
+        self.images_to_publish = self.current_freq  # since 1 second block
+        self.images_published_in_current_block = 0
 
         self.get_logger().info(
-            f"Starting frequency block: {self.current_freq} Hz "
-            f"(delay = {self.delay:.2f}s)"
+            f"Frequency {self.current_freq} Hz: publishing {self.images_to_publish} images in 1 second"
         )
 
-        # Start publishing 10 images at current frequency
+        # Start the timer at current frequency
         self.timer = self.create_timer(self.delay, self.timer_callback)
 
     def timer_callback(self):
-        if self.image_index >= len(self.image_files):
+        if self.images_published_in_current_block >= self.images_to_publish:
             self.timer.cancel()
             self.current_freq_index += 1
             self.start_frequency_block()
             return
 
-        img_path = self.image_files[self.image_index]
+        # Loop image index if we reach the end
+        img_path = self.image_files[self.image_index % self.total_images]
+        self.image_index += 1
+
         cv_image = cv2.imread(img_path)
         if cv_image is None:
             self.get_logger().warning(f'Failed to load image: {img_path}')
-            self.image_index += 1
             return
 
         ros_image = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
@@ -79,7 +83,7 @@ class ImagePublisher(Node):
         self.get_logger().info(
             f'[{self.current_freq} Hz] Published image {self.image_index + 1}/10: {os.path.basename(img_path)}'
         )
-        self.image_index += 1
+        self.images_published_in_current_block += 1
 
 
 def main(args=None):
