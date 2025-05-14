@@ -74,8 +74,8 @@ class YoloV4Node(Node):
         outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
 
         class_name = "None"
-        conf = 0
-        max_conf = 0
+        conf = 0.0
+        max_conf = 0.0
         # Extract detections
         height, width = frame.shape[:2]
         for output in outputs:
@@ -94,7 +94,7 @@ class YoloV4Node(Node):
         detections_msg = Detections()
         detections_msg.header.stamp = msg.header.stamp
         detections_msg.class_id = class_name
-        detections_msg.accuracy_percent = conf * 100
+        detections_msg.accuracy_percent = max_conf * 100
         detections_msg.payload_bytes = self.payload
         detections_msg.cuda = self.use_cuda
         self.publisher_.publish(detections_msg)

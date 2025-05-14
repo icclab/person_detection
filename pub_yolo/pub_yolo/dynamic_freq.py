@@ -16,7 +16,6 @@ class ImagePublisher(Node):
         self.publisher = self.create_publisher(Image, '/oak/rgb/image_raw', 10)
         self.bridge = CvBridge()
 
-        # Load 10 images
         self.image_files = sorted([
             os.path.join(image_folder, f)
             for f in os.listdir(image_folder)
