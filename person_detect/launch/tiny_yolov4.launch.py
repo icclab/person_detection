@@ -57,14 +57,14 @@ def generate_launch_description():
             emulate_tty=True,
         ),
 
-        # Node(
-        #     package='person_detect',
-        #     executable='log_tegrastats',
-        #     name='tegrastats_node',
-        #     namespace='oak',
-        #     parameters=[{"use_sim_time": False}],
-        #     output='screen',
-        #     # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
-        #     emulate_tty=True,
-        # ),
+        Node(
+            package='person_detect',
+            executable='log_tegrastats',
+            name='tegrastats_node',
+            namespace='oak',
+            parameters=[{"use_sim_time": False}],
+            output='screen',
+            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
+            emulate_tty=True,
+        ),
     ])

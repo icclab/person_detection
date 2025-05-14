@@ -50,7 +50,7 @@ class YoloV4TinyNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda", "person_bool"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -96,7 +96,12 @@ class YoloV4TinyNode(Node):
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
-        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda])
+        if max_conf > 0 and class_name == "person":
+            self.person_bool = 1
+        else:
+            self.person_bool = 0
+
+        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, self.person_bool])
         self.csvfile.flush()
 
     def __del__(self):

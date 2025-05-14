@@ -9,7 +9,7 @@ import time
 class ImagePublisher(Node):
     def __init__(self, image_folder):
         super().__init__('image_publisher')
-        self.publisher = self.create_publisher(Image, 'camera/image_raw', 10)
+        self.publisher = self.create_publisher(Image, '/oak/rgb/image_raw', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)  # 10Hz
         self.bridge = CvBridge()
 
@@ -42,8 +42,11 @@ class ImagePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    image_folder = '/home/lei/Downloads/energy_ws/voc2005_2/VOC2005_2/PNGImages/INRIA_inria-person-test/'
+    image_folder = '/home/icc-nano/energy_ws/src/person_detection/test_images/'
     node = ImagePublisher(image_folder)
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
