@@ -12,7 +12,7 @@ import signal
 
 class ImagePublisher(Node):
     def __init__(self, image_folder, csv_file):
-        super().__init__('image_publisher')
+        super().__init__('image_publisher_comp')
         self.publisher = self.create_publisher(Image, '/oak/rgb/image_raw', 10)
         self.bridge = CvBridge()
 
