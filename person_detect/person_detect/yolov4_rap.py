@@ -111,9 +111,12 @@ class YoloV4Node(Node):
         detections_msg.person_bool = person_bool
         detections_msg.local_inference_time = end - start
         detections_msg.transmission_time = t1 - (detections_msg.header.stamp.sec + (detections_msg.header.stamp.nanosec * 1e-9))
-        frame_id_str = detections_msg.header.frame_id
-        detections_msg.ground_truth, detections_msg.header.frame_id, detections_msg.compress, detections_msg.freq = frame_id_str.split(',')
+        frame_id_str = msg.header.frame_id
+        gt, detections_msg.header.frame_id, comp, fq = frame_id_str.split(',')
 
+        detections_msg.ground_truth = int(gt)
+        detections_msg.compress = int(comp)
+        detections_msg.freq = float(fq)
         self.publisher_.publish(detections_msg)
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
