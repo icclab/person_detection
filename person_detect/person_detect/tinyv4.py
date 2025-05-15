@@ -50,7 +50,7 @@ class YoloV4TinyNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq", "compress"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -106,9 +106,9 @@ class YoloV4TinyNode(Node):
         msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
 
         frame_id_str = msg.header.frame_id
-        ground_truth, img_name, freq = frame_id_str.split(',')
+        ground_truth, img_name, comp, freq = frame_id_str.split(',')
 
-        self.writer.writerow([msg_time, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, ground_truth, person_bool, img_name, float(freq)])
+        self.writer.writerow([msg_time, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, ground_truth, person_bool, img_name, float(freq), int(comp)])
         self.csvfile.flush()
 
     def __del__(self):
