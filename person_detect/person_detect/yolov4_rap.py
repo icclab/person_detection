@@ -60,6 +60,11 @@ class YoloV4Node(Node):
             'coco.names'
         )
 
+        self.tp = 0
+        self.tn = 0
+        self.fp = 0
+        self.fn = 0
+
         with open(names_path, "r") as f:
             self.class_names = f.read().strip().split("\n")
 
@@ -117,6 +122,28 @@ class YoloV4Node(Node):
         detections_msg.ground_truth = int(gt)
         detections_msg.compress = int(comp)
         detections_msg.freq = float(fq)
+
+        if int(gt) == 1 and int(person_bool) == 1:
+            self.tp += 1
+
+        elif int(gt) == 1 and int(person_bool) == 0:
+            self.fn += 1
+        
+        elif int(gt) == 0 and int(person_bool) == 0:
+            self.tn += 1
+
+        elif int(gt) == 0 and int(person_bool) == 1:
+            self.fp += 1
+
+        detections_msg.tp = self.tp
+        detections_msg.tn = self.tn
+        detections_msg.fp = self.fp
+        detections_msg.fn = self.fn
+
+        if self.tp > 0:
+            detections_msg.precision = self.tp / (self.tp + self.fp)
+            detections_msg.recall = self.tp / (self.tp + self.fn)
+
         self.publisher_.publish(detections_msg)
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")

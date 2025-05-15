@@ -9,3 +9,9 @@ uint8 ground_truth
 uint8 person_bool
 uint8 compress
 float64 freq
+uint32 tp
+uint32 tn
+uint32 fp
+uint32 fn
+float64 precision
+float64 recall

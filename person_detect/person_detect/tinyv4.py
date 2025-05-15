@@ -50,7 +50,7 @@ class YoloV4TinyNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
