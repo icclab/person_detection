@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'image_pub = pub_yolo.image_pub:main',
             'dynamic_freq = pub_yolo.dynamic_freq:main',
-            'dynamic_freq_comp = pub_yolo.dynamic_freq_comp:main']
+            'dynamic_freq_comp = pub_yolo.dynamic_freq_comp:main',
+            'image_pub_comp = pub_yolo.image_pub_comp:main']
     },
 )

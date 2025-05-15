@@ -15,18 +15,9 @@ def generate_launch_description():
 
     person_detect_pkg = get_package_share_directory("person_detect")
 
-    return LaunchDescription([
+    compress_level = LaunchConfiguration("compress")
 
-        Node(
-            package='person_detect',
-            executable='log_tegrastats',
-            name='tegrastats_node',
-            namespace='oak',
-            parameters=[{"use_sim_time": False}],
-            output='screen',
-            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
-            emulate_tty=True,
-        ),
+    return LaunchDescription([
 
         Node(
             package='person_detect',
@@ -39,16 +30,40 @@ def generate_launch_description():
             emulate_tty=True,
         ),
 
+        Node(
+            package='person_detect',
+            executable='log_tegrastats',
+            name='tegrastats_node',
+            namespace='oak',
+            parameters=[{"use_sim_time": False}],
+            output='screen',
+            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
+            emulate_tty=True,
+        ),
+
+        # Declare the 'compress' launch argument
+        DeclareLaunchArgument(
+            "compress",
+            default_value="60",
+            description="Compression level to use"
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(person_detect_pkg, "launch", "compress.launch.py")
+            ),
+            launch_arguments={"compress": compress_level}.items(),
+        ),
+
         # Delayed inclusion of another launch file (e.g., orin_rgb.launch.py)
         TimerAction(
             period=5.0,  # Delay in seconds
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        os.path.join(person_detect_pkg, "launch", "img_pub_comp.launch.py")
+                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_10_comp_60.launch.py")
                     )
                 )
             ]
         ),
-
     ])

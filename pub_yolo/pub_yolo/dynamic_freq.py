@@ -139,7 +139,7 @@ class ImagePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    image_folder = '/home/icc-nano/energy_ws/src/test_person'
+    image_folder = '/home/icc-nano/energy_ws/src/test_person/'
     csv_file = '/home/icc-nano/energy_ws/src/workload.csv'
     node = ImagePublisher(image_folder, csv_file)
     rclpy.spin(node)
