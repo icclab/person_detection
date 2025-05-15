@@ -65,13 +65,17 @@ class YoloV4Node(Node):
 
     def listener_callback(self, msg):
         
+        t1 = time.time()
+        
         self.get_logger().info("Received image")
-
+        
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
         self.net.setInput(blob)
 
+        start = time.time()
         outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
+        end = time.time()
 
         class_name = "None"
         conf = 0.0
@@ -91,12 +95,25 @@ class YoloV4Node(Node):
 
                         class_name = self.class_names[class_id]
 
+        person_bool = 0
+
+        if max_conf > 0.0 and class_name == "person":
+            person_bool = 1
+        else:
+            person_bool = 0
+        
         detections_msg = Detections()
         detections_msg.header.stamp = msg.header.stamp
         detections_msg.class_id = class_name
         detections_msg.accuracy_percent = max_conf * 100
         detections_msg.payload_bytes = self.payload
         detections_msg.cuda = self.use_cuda
+        detections_msg.person_bool = person_bool
+        detections_msg.local_inference_time = end - start
+        detections_msg.transmission_time = t1 - (detections_msg.header.stamp.sec + (detections_msg.header.stamp.nanosec * 1e-9))
+        frame_id_str = detections_msg.header.frame_id
+        detections_msg.ground_truth, detections_msg.header.frame_id, detections_msg.compress = frame_id_str.split(',')
+
         self.publisher_.publish(detections_msg)
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")

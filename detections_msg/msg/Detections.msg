@@ -3,3 +3,8 @@ string class_id
 float64 accuracy_percent
 uint32 payload_bytes
 bool cuda
+float64 local_inference_time
+float64 transmission_time
+uint8 ground_truth
+uint8 person_bool
+uint8 compress

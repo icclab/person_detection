@@ -50,7 +50,7 @@ class YoloV4TinyNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda", "person_bool"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "accuracy_in_percent", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "compress"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -96,12 +96,19 @@ class YoloV4TinyNode(Node):
 
         self.get_logger().info(f"Detected {class_name} with max. confidence {max_conf:.2f}")
 
-        if max_conf > 0 and class_name == "person":
-            self.person_bool = 1
-        else:
-            self.person_bool = 0
+        person_bool = 0
 
-        self.writer.writerow([end, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, self.person_bool])
+        if max_conf > 0.0 and class_name == "person":
+            person_bool = 1
+        else:
+            person_bool = 0
+
+        msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
+
+        frame_id_str = msg.header.frame_id
+        ground_truth, img_name, compress = frame_id_str.split(',')
+
+        self.writer.writerow([msg_time, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, ground_truth, person_bool, img_name, compress])
         self.csvfile.flush()
 
     def __del__(self):

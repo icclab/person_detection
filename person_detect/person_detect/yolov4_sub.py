@@ -22,37 +22,37 @@ class YoloV8nNode(Node):
         )
 
         self.subscription = self.create_subscription(Detections, '/oak/yolo/detections', self.listener_callback, 10)
-        self.subscription2 = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback2, qos)
+        # self.subscription2 = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback2, qos)
         
         self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
         self.output_file = f"yolo_v4_{self.start_time_str}.csv"
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["image_raw_timestamp_nsec", "current_time_sec", "class_id", "accuracy_in_percent", "payload_bytes", "cuda"])
+        self.writer.writerow(["current_time_sec", "class_id", "accuracy_in_percent", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "compress", "local_inference_time", "transmission_time"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
 
-        self.time_output_file = f"time_yolo_v4_{self.start_time_str}.csv"
+        # self.time_output_file = f"time_yolo_v4_{self.start_time_str}.csv"
 
-        self.time_file = open(self.time_output_file, "w", newline='')
-        self.time_writer = csv.writer(self.time_file)
-        self.time_writer.writerow(["image_raw_timestamp_nsec", "current_time_sec"])
-        self.time_file.flush()
+        # self.time_file = open(self.time_output_file, "w", newline='')
+        # self.time_writer = csv.writer(self.time_file)
+        # self.time_writer.writerow(["image_raw_timestamp_nsec", "current_time_sec"])
+        # self.time_file.flush()
 
-        self.get_logger().info(f"Logging to: {self.time_output_file}")
+        # self.get_logger().info(f"Logging to: {self.time_output_file}")
         
-    def listener_callback2(self, msg):
+    # def listener_callback2(self, msg):
         
-        self.get_logger().warn("Image callback triggered")
-        msg_time_nsec = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
-        self.time_writer.writerow([msg_time_nsec, time.time()])
+    #     self.get_logger().warn("Image callback triggered")
+    #     msg_time_nsec = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
+    #     self.time_writer.writerow([msg_time_nsec, time.time()])
         
     def listener_callback(self, msg):
 
-        msg_time_nsec = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
-        self.writer.writerow([msg_time_nsec, time.time(), msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda])
+        msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
+        self.writer.writerow([msg_time, msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda, msg.ground_truth, msg.person_bool, msg.header.frame_id, msg.compress, msg.local_inference_time, msg.transmission_time])
 
         self.csvfile.flush()
 
