@@ -29,7 +29,7 @@ class YoloV8nNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["current_time_sec", "class_id", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "compress", "local_inference_time", "transmission_time", "TP", "FP", "TN", "FN", "precision", "recall"])
+        self.writer.writerow(["current_time_sec", "class_id", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "compress", "local_inference_time", "transmission_time", "TP", "FP", "TN", "FN", "precision", "recall", "freq"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -52,7 +52,7 @@ class YoloV8nNode(Node):
     def listener_callback(self, msg):
 
         msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
-        self.writer.writerow([msg_time, msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda, msg.ground_truth, msg.person_bool, msg.header.frame_id, msg.compress, msg.local_inference_time, msg.transmission_time, msg.tp, msg.fp, msg.tn, msg.fn, msg.precision, msg.recall])
+        self.writer.writerow([msg_time, msg.class_id, msg.accuracy_percent, msg.payload_bytes, msg.cuda, msg.ground_truth, msg.person_bool, msg.header.frame_id, msg.compress, msg.local_inference_time, msg.transmission_time, msg.tp, msg.fp, msg.tn, msg.fn, msg.precision, msg.recall, msg.freq])
 
         self.csvfile.flush()
 

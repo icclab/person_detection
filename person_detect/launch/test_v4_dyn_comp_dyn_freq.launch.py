@@ -39,4 +39,15 @@ def generate_launch_description():
                 )
             ]
         ),
+
+        Node(
+            package='person_detect',
+            executable='yolo_v4_sub',
+            name='yolo_node_sub',
+            namespace='oak',
+            parameters=[{"use_sim_time": False}],
+            output='screen',
+            # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
+            emulate_tty=True,
+        ),
     ])

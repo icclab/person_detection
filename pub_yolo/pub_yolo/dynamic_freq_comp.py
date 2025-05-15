@@ -33,7 +33,7 @@ class ImagePublisher(Node):
         with open(csv_file, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                freq = math.ceil(float(row['frequency(Hz)']))  # round down
+                freq = float(row['frequency(Hz)'])
                 if freq <= 0:
                     freq = 1  # default minimum frequency
                 self.frequencies.append(freq)
@@ -45,13 +45,13 @@ class ImagePublisher(Node):
 
         self.current_compression = 100
 
-        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"imgs_tiny_yolo_v4_{self.start_time_str}.csv"
+        # self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
+        # self.output_file = f"imgs_tiny_yolo_v4_{self.start_time_str}.csv"
 
-        self.csvfile = open(self.output_file, "w", newline='')
-        self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["img_name", "bool_person"])
-        self.csvfile.flush()
+        # self.csvfile = open(self.output_file, "w", newline='')
+        # self.writer = csv.writer(self.csvfile)
+        # self.writer.writerow(["img_name", "bool_person"])
+        # self.csvfile.flush()
 
         self.proc = None
 
@@ -127,8 +127,8 @@ class ImagePublisher(Node):
         )
 
         log_name = os.path.basename(img_path)
-        self.writer.writerow([log_name, log_name[0]])
-        self.csvfile.flush()
+        # self.writer.writerow([log_name, log_name[0]])
+        # self.csvfile.flush()
 
         ros_image = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
         ros_image.header.stamp = self.get_clock().now().to_msg()

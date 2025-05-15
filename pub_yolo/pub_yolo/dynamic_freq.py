@@ -32,7 +32,7 @@ class ImagePublisher(Node):
         with open(csv_file, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                freq = math.ceil(float(row['frequency(Hz)']))  # round down
+                freq = float(row['frequency(Hz)']) 
                 if freq <= 0:
                     freq = 1  # default minimum frequency
                 self.frequencies.append(freq)
