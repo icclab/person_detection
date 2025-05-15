@@ -50,7 +50,7 @@ class YoloV4TinyNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq", "compress"])
+        self.writer.writerow(["unix_timestamp_sec", "class_id", "inference_time_sec", "confidence", "payload_bytes", "cuda", "ground_truth", "person_bool", "img_name", "freq", "compress", "TP", "FP", "TN", "FN", "precision", "recall"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -60,6 +60,11 @@ class YoloV4TinyNode(Node):
             'config',
             'coco.names'
         )
+
+        self.tp = 0
+        self.tn = 0
+        self.fp = 0
+        self.fn = 0
 
         with open(names_path, "r") as f:
             self.class_names = f.read().strip().split("\n")
@@ -108,7 +113,26 @@ class YoloV4TinyNode(Node):
         frame_id_str = msg.header.frame_id
         ground_truth, img_name, comp, freq = frame_id_str.split(',')
 
-        self.writer.writerow([msg_time, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, ground_truth, person_bool, img_name, float(freq), int(comp)])
+        if int(ground_truth) == 1 and int(person_bool) == 1:
+            self.tp += 1
+
+        elif int(ground_truth) == 1 and int(person_bool) == 0:
+            self.fn += 1
+        
+        elif int(ground_truth) == 0 and int(person_bool) == 0:
+            self.tn += 1
+
+        elif int(ground_truth) == 0 and int(person_bool) == 1:
+            self.fp += 1
+
+        precision = 0.0
+        recall = 0.0
+
+        if self.tp > 0:
+            precision = self.tp / (self.tp + self.fp)
+            recall = self.tp / (self.tp + self.fn)
+
+        self.writer.writerow([msg_time, class_name, end - start, max_conf * 100, len(msg.data), self.use_cuda, ground_truth, person_bool, img_name, float(freq), int(comp), self.tp, self.fp, self.tn, self.fn, precision, recall])
         self.csvfile.flush()
 
     def __del__(self):
