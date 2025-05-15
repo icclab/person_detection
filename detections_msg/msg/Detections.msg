@@ -8,3 +8,4 @@ float64 transmission_time
 uint8 ground_truth
 uint8 person_bool
 uint8 compress
+float64 freq

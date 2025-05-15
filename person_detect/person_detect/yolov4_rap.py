@@ -112,7 +112,7 @@ class YoloV4Node(Node):
         detections_msg.local_inference_time = end - start
         detections_msg.transmission_time = t1 - (detections_msg.header.stamp.sec + (detections_msg.header.stamp.nanosec * 1e-9))
         frame_id_str = detections_msg.header.frame_id
-        detections_msg.ground_truth, detections_msg.header.frame_id, detections_msg.compress = frame_id_str.split(',')
+        detections_msg.ground_truth, detections_msg.header.frame_id, detections_msg.compress, detections_msg.freq = frame_id_str.split(',')
 
         self.publisher_.publish(detections_msg)
 

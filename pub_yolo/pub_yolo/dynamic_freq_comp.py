@@ -132,7 +132,7 @@ class ImagePublisher(Node):
 
         ros_image = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
         ros_image.header.stamp = self.get_clock().now().to_msg()
-        ros_image.header.frame_id = log_name + "," + str(int(self.current_compression))
+        ros_image.header.frame_id = log_name[0] + "," + log_name + "," + str(int(self.current_compression)) + "," + str(self.current_freq)
         self.publisher.publish(ros_image)
         
         self.images_published_in_current_block += 1
