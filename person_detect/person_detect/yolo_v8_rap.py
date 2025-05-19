@@ -58,7 +58,7 @@ class YoloV8nNode(Node):
         start = time.time()
         results = self.model.predict(frame, imgsz=640, device=self.device, verbose=False)
         end = time.time()
-        conf = 0
+        conf = 0.0
         label = "None"
         # Process predictions
         height, width = frame.shape[:2]
@@ -123,10 +123,6 @@ class YoloV8nNode(Node):
     def listener_callback2(self, msg):
         # self.get_logger().info("Received compressed image")
         self.payload = len(msg.data)
-
-    def __del__(self):
-        if self.csvfile:
-            self.csvfile.close()
 
 def main(args=None):
     rclpy.init(args=args)
