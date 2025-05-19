@@ -15,6 +15,13 @@ def generate_launch_description():
             default_value='10.0',
             description='Frequency (Hz) to publish images'
         ),
+
+        DeclareLaunchArgument(
+            'compress',
+            default_value='100',
+            description='compress'
+        ),
+
         DeclareLaunchArgument(
             'duration',
             default_value='200.0',
@@ -27,7 +34,8 @@ def generate_launch_description():
             parameters=[
                 {'image_folder': LaunchConfiguration('image_folder')},
                 {'frequency': LaunchConfiguration('frequency')},
-                {'duration': LaunchConfiguration('duration')}
+                {'duration': LaunchConfiguration('duration')},
+                {'compress': LaunchConfiguration('compress')},
             ],
             output='screen'
         )

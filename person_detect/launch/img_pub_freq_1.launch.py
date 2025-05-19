@@ -20,6 +20,13 @@ def generate_launch_description():
             default_value='200.0',
             description='Total duration (seconds) to run the publisher'
         ),
+
+        DeclareLaunchArgument(
+            'compress',
+            default_value='100',
+            description='compress'
+        ),
+        
         Node(
             package='pub_yolo',
             executable='image_pub',
@@ -27,7 +34,8 @@ def generate_launch_description():
             parameters=[
                 {'image_folder': LaunchConfiguration('image_folder')},
                 {'frequency': LaunchConfiguration('frequency')},
-                {'duration': LaunchConfiguration('duration')}
+                {'duration': LaunchConfiguration('duration')},
+                {'compress': LaunchConfiguration('compress')},
             ],
             output='screen'
         )

@@ -36,6 +36,7 @@ setup(
             'person_detect_driver_orin = person_detect.person_detect_driver_orin:main',
             'person_detect_driver_tinyv4 = person_detect.tinyv4:main',
             'yolo_v8_rap = person_detect.yolo_v8_rap:main',
+            'yolo_v8_rap_raw = person_detect.yolo_v8_rap_raw:main',
             'yolo_v4_rap = person_detect.yolov4_rap:main',
             'log_tegrastats = person_detect.log_tegrastats:main',
             'yolo_v4_sub = person_detect.yolov4_sub:main',
