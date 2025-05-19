@@ -39,6 +39,7 @@ setup(
             'yolo_v4_rap = person_detect.yolov4_rap:main',
             'log_tegrastats = person_detect.log_tegrastats:main',
             'yolo_v4_sub = person_detect.yolov4_sub:main',
+            'yolo_v8_sub = person_detect.yolo_v8_sub:main'
         ],
     },
 )

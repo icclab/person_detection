@@ -21,7 +21,7 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='yolo_v4_sub',
+            executable='yolo_v8_sub',
             name='yolo_node_sub',
             namespace='oak',
             parameters=[{"use_sim_time": False}],
@@ -61,7 +61,7 @@ def generate_launch_description():
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_5_comp_80.launch.py")
+                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_10_comp_80.launch.py")
                     )
                 )
             ]

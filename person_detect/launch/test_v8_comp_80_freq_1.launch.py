@@ -21,7 +21,7 @@ def generate_launch_description():
 
         Node(
             package='person_detect',
-            executable='yolo_v4_sub',
+            executable='yolo_v8_sub',
             name='yolo_node_sub',
             namespace='oak',
             parameters=[{"use_sim_time": False}],
@@ -44,7 +44,7 @@ def generate_launch_description():
         # Declare the 'compress' launch argument
         DeclareLaunchArgument(
             "compress",
-            default_value="60",
+            default_value="80",
             description="Compression level to use"
         ),
 
@@ -61,7 +61,7 @@ def generate_launch_description():
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_1_comp_60.launch.py")
+                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_1_comp_80.launch.py")
                     )
                 )
             ]
