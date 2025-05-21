@@ -66,8 +66,8 @@ class YoloV8nNode(Node):
     def __del__(self):
         if self.csvfile:
             self.csvfile.close()
-        if self.time_file:
-            self.time_file.close()
+        # if self.time_file:
+        #     self.time_file.close()
 
 def main(args=None):
     rclpy.init(args=args)
