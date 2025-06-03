@@ -7,18 +7,13 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'image_folder',
-            default_value='/home/icc-nano/energy_ws/src/test_person/',
+            default_value='/home/icc-nano/energy_ws/src/MOT20-01/img1/',
             description='Folder containing image files to publish'
         ),
         DeclareLaunchArgument(
             'frequency',
             default_value='1.0',
             description='Frequency (Hz) to publish images'
-        ),
-        DeclareLaunchArgument(
-            'duration',
-            default_value='200.0',
-            description='Total duration (seconds) to run the publisher'
         ),
 
         DeclareLaunchArgument(
@@ -34,7 +29,6 @@ def generate_launch_description():
             parameters=[
                 {'image_folder': LaunchConfiguration('image_folder')},
                 {'frequency': LaunchConfiguration('frequency')},
-                {'duration': LaunchConfiguration('duration')},
                 {'compress': LaunchConfiguration('compress')},
             ],
             output='screen'
