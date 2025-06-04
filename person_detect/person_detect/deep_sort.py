@@ -42,7 +42,7 @@ def compute_iou(boxA, boxB):
     return interArea / float(boxAArea + boxBArea - interArea)
 
 # === Initialize model and tracker ===
-model = YOLO("yolov8n.pt")
+model = YOLO("yolov8n.pt").to("cuda")
 tracker = DeepSort(max_age=30)
 
 frame_id = 1

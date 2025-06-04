@@ -17,6 +17,12 @@ def generate_launch_description():
         ),
 
         DeclareLaunchArgument(
+            'fps',
+            default_value='30.0',
+            description='Frames per second for image publishing'
+        ),
+
+        DeclareLaunchArgument(
             'compress',
             default_value='100',
             description='compress'
@@ -30,6 +36,7 @@ def generate_launch_description():
                 {'image_folder': LaunchConfiguration('image_folder')},
                 {'frequency': LaunchConfiguration('frequency')},
                 {'compress': LaunchConfiguration('compress')},
+                {'fps': LaunchConfiguration('fps')}
             ],
             output='screen'
         )
