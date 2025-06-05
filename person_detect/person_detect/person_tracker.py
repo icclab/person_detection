@@ -24,7 +24,7 @@ class PersonTrackerNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "frame_id", "tracker_id", "gt_id", "inference_time_sec", "IoU", "payload_bytes", "img_name", "freq", "compress"])
+        self.writer.writerow(["unix_timestamp_sec", "frame_id", "tracker_id", "gt_id", "inference_time_sec", "bb_top_left_x", "bb_top_left_y", "bb_width", "bb_height", "conf", "IoU", "IoU_visible", "payload_bytes", "img_name", "freq", "compress"])
         self.csvfile.flush()
         self.get_logger().info(f"Logging to: {self.output_file}")
 
@@ -108,9 +108,10 @@ class PersonTrackerNode(Node):
         # === Update tracker ===
         tracks = self.tracker.update_tracks(detections, frame=frame)
 
-        tracked_box = None
+        tracked_box = [0, 0, 0, 0]
 
-        iou = 0
+        iou = 0.0
+        iou_vis = 0.0
         for track in tracks:
             if not track.is_confirmed():
                 continue
@@ -137,7 +138,8 @@ class PersonTrackerNode(Node):
                         # cv2.putText(frame, f"GT ID {gt_id}", (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
                         if tracked_box:
-                            iou = min(self.compute_iou(tracked_box, [x, y, w, h]) / visible, 1.0)
+                            iou = self.compute_iou(tracked_box, [x, y, w, h])
+                            iou_vis = min(iou / visible, 1.0)
 
             #                 cv2.putText(frame, f"IoU: {iou:.2f}", (x1, y2 + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
 
@@ -150,12 +152,12 @@ class PersonTrackerNode(Node):
         # At bottom of loop:
         elapsed = time.time() - start_time
 
-        fps = 1 / elapsed if elapsed > 0 else 0
-        print(f"Frame {frame_id}: {fps:.2f} FPS")
+        # fps = 1 / elapsed if elapsed > 0 else 0
+        # print(f"Frame {frame_id}: {fps:.2f} FPS")
 
         msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
 
-        self.writer.writerow([msg_time, frame_id, self.desired_id, self.target_gt_id, elapsed, iou, len(msg.data), img_name, float(freq), int(comp)])
+        self.writer.writerow([msg_time, frame_id, self.desired_id, self.target_gt_id, elapsed, int(tracked_box[0]), int(tracked_box[1]), int(tracked_box[2]), int(tracked_box[3]), conf, iou, iou_vis, len(msg.data), img_name, float(freq), int(comp)])
         self.csvfile.flush()
 
     def __del__(self):
