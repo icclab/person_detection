@@ -44,6 +44,7 @@ setup(
             'yolo_v8_sub = person_detect.yolo_v8_sub:main',
             'person_tracker = person_detect.person_tracker:main',
             'person_tracker_rap = person_detect.person_tracker_rap:main',
+            'person_tracker_sub = person_detect.person_tracker_sub:main'
         ],
     },
 )
