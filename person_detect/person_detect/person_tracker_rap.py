@@ -112,6 +112,7 @@ class PersonTrackerNode(Node):
 
         iou = 0.0
         iou_vis = 0.0
+        conf = 1.0
         for track in tracks:
             if not track.is_confirmed():
                 continue
