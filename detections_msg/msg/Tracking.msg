@@ -8,3 +8,7 @@ float64 transmission_time
 float64 confidence
 float64 iou
 float64 iou_visible
+uint16 bb_top_left_x
+uint16 bb_top_left_y
+uint16 bb_width
+uint16 bb_height
