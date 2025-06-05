@@ -42,7 +42,8 @@ setup(
             'log_tegrastats = person_detect.log_tegrastats:main',
             'yolo_v4_sub = person_detect.yolov4_sub:main',
             'yolo_v8_sub = person_detect.yolo_v8_sub:main',
-            'person_tracker = person_detect.person_tracker:main'
+            'person_tracker = person_detect.person_tracker:main',
+            'person_tracker_rap = person_detect.person_tracker_rap:main',
         ],
     },
 )

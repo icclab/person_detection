@@ -31,13 +31,13 @@ class PersonTrackerNode(Node):
 
         self.publisher_ = self.create_publisher(Tracking, '/oak/yolo/detections', 10)
 
-        self.declare_parameter("gt_folder", "/home/icc-nano/energy_ws/src/MOT20-01/")
+        self.declare_parameter("gt_folder", "/home/ros/rap/energy_ws/src/")
         dataset_path = self.get_parameter("gt_folder").get_parameter_value().string_value
 
         self.declare_parameter("target_gt_id", 3)
         self.target_gt_id = self.get_parameter("target_gt_id").get_parameter_value().integer_value
         
-        gt_file = os.path.join(dataset_path, "gt", "gt.txt")
+        gt_file = os.path.join(dataset_path, "gt.txt")
 
         # === Initialize model and tracker ===
         self.model = YOLO("yolov8n.pt").to("cuda")
@@ -126,9 +126,6 @@ class PersonTrackerNode(Node):
             tracked_box = [l, t, w, h]
             conf = 1.0
 
-            self.writer2.writerow([frame_id, track_id, int(l), int(t), int(w), int(h), conf, -1, -1, -1])
-            self.csvfile2.flush()
-
             # === Visualize ground truth for the target ID ===
             if frame_id in self.gt_dict:
                 for gt_id, x, y, w, h, visible in self.gt_dict[frame_id]:
@@ -155,7 +152,7 @@ class PersonTrackerNode(Node):
         detections_msg.confidence = conf
         detections_msg.transmission_time = t1 - (detections_msg.header.stamp.sec + (detections_msg.header.stamp.nanosec * 1e-9))
         detections_msg.iou = iou
-        detections_msg.iou_vis = iou_vis
+        detections_msg.iou_visible = iou_vis
         detections_msg.bb_top_left_x = int(tracked_box[0])
         detections_msg.bb_top_left_y = int(tracked_box[1])
         detections_msg.bb_width = int(tracked_box[2])
