@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import cv2, time
 import os
@@ -10,31 +10,29 @@ import numpy as np
 from ultralytics import YOLO
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from rclpy.executors import MultiThreadedExecutor
-
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from ament_index_python.packages import get_package_share_directory
+from detections_msg.msg import Tracking
 
 class PersonTrackerNode(Node):
     def __init__(self):
         super().__init__('person_tracker_node')
-        self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw', self.listener_callback, 10)
+
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE
+        )
+        self.subscription = self.create_subscription(Image, '/oak/rgb/image_raw/decompressed', self.listener_callback, qos)
+        self.subscription2 = self.create_subscription(CompressedImage, '/oak/rgb/image_raw/dynamic/compressed', self.listener_callback2, qos)
+
         self.bridge = CvBridge()
 
-        self.start_time_str = time.strftime("%d-%m-%Y_%H-%M-%S")
-        self.output_file = f"tracker_orin_{self.start_time_str}.csv"
+        self.payload = 0.0
 
-        self.csvfile = open(self.output_file, "w", newline='')
-        self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "frame_id", "tracker_id", "gt_id", "inference_time_sec", "bb_top_left_x", "bb_top_left_y", "bb_width", "bb_height", "conf", "IoU", "IoU_visible", "payload_bytes", "img_name", "freq", "compress"])
-        self.csvfile.flush()
-        self.get_logger().info(f"Logging to: {self.output_file}")
+        self.publisher_ = self.create_publisher(Tracking, '/oak/yolo/detections', 10)
 
         self.declare_parameter("gt_folder", "/home/icc-nano/energy_ws/src/MOT20-01/")
         dataset_path = self.get_parameter("gt_folder").get_parameter_value().string_value
-    
-        self.output_txt = f"yolov8n_deepsort_{self.start_time_str}.txt"
-
-        self.csvfile2 = open(self.output_txt, "w", newline='')
-        self.writer2 = csv.writer(self.csvfile2)
 
         self.declare_parameter("target_gt_id", 3)
         self.target_gt_id = self.get_parameter("target_gt_id").get_parameter_value().integer_value
@@ -79,6 +77,8 @@ class PersonTrackerNode(Node):
         return interArea / float(boxAArea + boxBArea - interArea)
     
     def listener_callback(self, msg):
+
+        t1 = time.time()
         
         self.get_logger().info("Received image")
         
@@ -112,7 +112,6 @@ class PersonTrackerNode(Node):
 
         iou = 0.0
         iou_vis = 0.0
-        conf = 1.0
         for track in tracks:
             if not track.is_confirmed():
                 continue
@@ -125,6 +124,7 @@ class PersonTrackerNode(Node):
             l, t, r, b = track.to_ltrb()
             w, h = r - l, b - t
             tracked_box = [l, t, w, h]
+            conf = 1.0
 
             self.writer2.writerow([frame_id, track_id, int(l), int(t), int(w), int(h), conf, -1, -1, -1])
             self.csvfile2.flush()
@@ -134,37 +134,38 @@ class PersonTrackerNode(Node):
                 for gt_id, x, y, w, h, visible in self.gt_dict[frame_id]:
                     if gt_id == self.target_gt_id and tracked_box:
                         x1, y1, x2, y2 = int(x), int(y), int(x + w), int(y + h)
-                        # cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                        # cv2.putText(frame, f"GT ID {gt_id}", (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
                         if tracked_box:
                             iou = self.compute_iou(tracked_box, [x, y, w, h])
                             iou_vis = min(iou / visible, 1.0)
-
-            #                 cv2.putText(frame, f"IoU: {iou:.2f}", (x1, y2 + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
-
-            # # Visualize
-            # cv2.rectangle(frame, (int(l), int(t)), (int(r), int(b)), (0, 255, 0), 2)
-            # cv2.putText(frame, f"ID {track_id}", (int(l), int(t) - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-        # cv2.imshow("YOLOv8n + DeepSORT", frame)
 
         # At bottom of loop:
         elapsed = time.time() - start_time
 
         print(f"Frame {frame_id}")
 
-        msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
+        detections_msg = Tracking()
+        detections_msg.track_id = self.desired_id
+        detections_msg.target_gt_id = self.target_gt_id
+        detections_msg.local_inference_time = elapsed
+        detections_msg.header.stamp = msg.header.stamp
+        detections_msg.header.frame_id = frame_id_str 
+        detections_msg.accuracy = conf
+        detections_msg.payload_bytes = self.payload
+        detections_msg.confidence = conf
+        detections_msg.transmission_time = t1 - (detections_msg.header.stamp.sec + (detections_msg.header.stamp.nanosec * 1e-9))
+        detections_msg.iou = iou
+        detections_msg.iou_vis = iou_vis
+        detections_msg.bb_top_left_x = int(tracked_box[0])
+        detections_msg.bb_top_left_y = int(tracked_box[1])
+        detections_msg.bb_width = int(tracked_box[2])
+        detections_msg.bb_height = int(tracked_box[3])
 
-        self.writer.writerow([msg_time, frame_id, self.desired_id, self.target_gt_id, elapsed, int(tracked_box[0]), int(tracked_box[1]), int(tracked_box[2]), int(tracked_box[3]), conf, iou, iou_vis, len(msg.data), img_name, float(freq), int(comp)])
-        self.csvfile.flush()
+        self.publisher_.publish(detections_msg)
 
-    def __del__(self):
-        # === Save results in MOT format ===
-        if self.csvfile2:
-            self.csvfile2.close()
-        if self.csvfile:
-            self.csvfile.close()
+    def listener_callback2(self, msg):
+        # self.get_logger().info("Received compressed image")
+        self.payload = len(msg.data)
 
 def main(args=None):
     rclpy.init(args=args)

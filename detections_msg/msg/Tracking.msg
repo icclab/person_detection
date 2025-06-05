@@ -1,0 +1,10 @@
+std_msgs/Header header
+uint8 track_id
+uint8 target_gt_id
+float64 accuracy
+uint32 payload_bytes
+float64 local_inference_time
+float64 transmission_time
+float64 confidence
+float64 iou
+float64 iou_visible
