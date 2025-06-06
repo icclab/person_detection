@@ -18,6 +18,8 @@ class ImagePublisher(Node):
         self.declare_parameter("image_folder", "/home/icc-nano/energy_ws/src/MOT20-01/img1/")
         self.declare_parameter("csv_file", "/home/icc-nano/energy_ws/src/workload_1.csv")
 
+        self.declare_parameter("img_start_index", 0)
+
         self.declare_parameter("compress", 100) 
         self.declare_parameter("fps", 30.0)  # default: 30 Hz
 
@@ -26,6 +28,8 @@ class ImagePublisher(Node):
         self.fps = self.get_parameter("fps").get_parameter_value().double_value
 
         self.compress = self.get_parameter("compress").get_parameter_value().integer_value
+
+        self.img_start_index = self.get_parameter("img_start_index").get_parameter_value().integer_value
 
         self.publisher = self.create_publisher(Image, '/oak/rgb/image_raw', 10)
 
@@ -54,7 +58,7 @@ class ImagePublisher(Node):
                 self.frequencies.append(freq)
 
         self.current_freq_index = 0
-        self.image_index = 0
+        self.image_index = self.img_start_index
         self.add = 0 
         self.images_published_in_current_block = 0
 
@@ -98,7 +102,7 @@ class ImagePublisher(Node):
         log_name = os.path.basename(img_path)
 
         self.get_logger().info(
-            f'[{self.current_freq} Hz] Published image {self.image_index}: {log_name}'
+            f'[{self.current_freq} Hz] Published image {self.image_index + 1}: {log_name}'
         )
 
         ros_image = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')

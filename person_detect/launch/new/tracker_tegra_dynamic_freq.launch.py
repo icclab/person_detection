@@ -61,27 +61,13 @@ def generate_launch_description():
             emulate_tty=True,
         ),
 
-        # # Declare the 'compress' launch argument
-        # DeclareLaunchArgument(
-        #     "compress",
-        #     default_value="60",
-        #     description="Compression level to use"
-        # ),
-
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         os.path.join(person_detect_pkg, "launch", "compress.launch.py")
-        #     ),
-        #     launch_arguments={"compress": compress_level}.items(),
-        # ),
-
         # Delayed inclusion of another launch file (e.g., orin_rgb.launch.py)
         TimerAction(
             period=10.0,  # Delay in seconds
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        os.path.join(person_detect_pkg, "launch", "img_pub_freq_1.launch.py")
+                        os.path.join(person_detect_pkg, "launch", "dynamic_freq.launch.py")
                     )
                 )
             ]

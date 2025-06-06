@@ -21,14 +21,26 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'image_folder',
-            default_value='/home/icc-nano/energy_ws/src/test_person_1/',
+            default_value='/home/icc-nano/energy_ws/src/MOT20-01/img1/',
             description='Folder containing image files to publish'
         ),
 
         DeclareLaunchArgument(
             'compress',
-            default_value='60',
+            default_value='100',
             description='compress'
+        ),
+
+        DeclareLaunchArgument(
+            'img_start_index',
+            default_value='0',
+            description='Start index for image files'
+        ),
+
+        DeclareLaunchArgument(
+            'fps',
+            default_value='30.0',
+            description='Frames per second for image publishing'
         ),
 
         DeclareLaunchArgument(
@@ -45,7 +57,9 @@ def generate_launch_description():
             parameters=[{"use_sim_time": False},                 
                 {'image_folder': image_folder},
                 {'csv_file': csv_file},
-                {'compress': compress_level},],
+                {'compress': compress_level},
+                {'fps': LaunchConfiguration('fps')},
+                {'img_start_index': LaunchConfiguration('img_start_index')}],
             output='screen',
             # remappings=[('/tf', '/summit/tf'), ('/tf_static', '/summit/tf_static'),],
             emulate_tty=True,
