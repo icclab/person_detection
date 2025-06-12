@@ -49,18 +49,23 @@ class ImagePublisher(Node):
 
         # Read frequency list
         self.frequencies = []
+        self.battery_levels = []
         with open(self.csv_file, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 freq = float(row['frequency(Hz)']) 
+                battery_level_ntua = float(row['battery_level(%)'])
                 if freq <= 0.0:
                     freq = 1.0  # default minimum frequency
                 self.frequencies.append(freq)
+                self.battery_levels.append(battery_level_ntua)
 
         self.current_freq_index = 0
         self.image_index = self.img_start_index
         self.add = 0 
         self.images_published_in_current_block = 0
+        self.current_freq = 0.0
+        self.current_battery_level = 0.0
 
         self.start_frequency_block()
 
@@ -71,6 +76,8 @@ class ImagePublisher(Node):
             return
 
         self.current_freq = self.frequencies[self.current_freq_index]
+        self.current_battery_level = self.battery_levels[self.current_freq_index]
+
         self.delay = 1.0 / self.current_freq
         self.images_to_publish = self.current_freq  # since 1 second block
         self.images_published_in_current_block = 0
@@ -107,7 +114,7 @@ class ImagePublisher(Node):
 
         ros_image = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
         ros_image.header.stamp = self.get_clock().now().to_msg()
-        ros_image.header.frame_id = log_name + "," + str(self.compress) + "," + str(self.current_freq)
+        ros_image.header.frame_id = log_name + "," + str(self.compress) + "," + str(self.current_freq) + "," + str(self.current_battery_level)
         self.publisher.publish(ros_image)
         
         self.image_index += round(self.fps / self.current_freq)

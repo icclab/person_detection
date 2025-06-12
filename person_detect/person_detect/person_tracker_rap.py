@@ -85,7 +85,7 @@ class PersonTrackerNode(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
         frame_id_str = msg.header.frame_id
-        img_name, comp, freq = frame_id_str.split(',')
+        img_name, comp, freq, battery_level = frame_id_str.split(',')
 
         frame_id = int(os.path.splitext(img_name)[0])
 

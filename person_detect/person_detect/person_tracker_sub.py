@@ -24,7 +24,7 @@ class YoloV8nNode(Node):
 
         self.csvfile = open(self.output_file, "w", newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(["unix_timestamp_sec", "frame_id", "tracker_id", "gt_id", "inference_time_sec", "bb_top_left_x", "bb_top_left_y", "bb_width", "bb_height", "conf", "IoU", "IoU_visible", "payload_bytes", "img_name", "freq", "compress", "transmission_time_sec"])
+        self.writer.writerow(["unix_timestamp_sec", "frame_id", "tracker_id", "gt_id", "inference_time_sec", "bb_top_left_x", "bb_top_left_y", "bb_width", "bb_height", "conf", "IoU", "IoU_visible", "payload_bytes", "img_name", "freq", "compress", "transmission_time_sec", "battery_level_ntua"])
         self.csvfile.flush()
 
         self.get_logger().info(f"Logging to: {self.output_file}")
@@ -34,10 +34,10 @@ class YoloV8nNode(Node):
         msg_time = msg.header.stamp.sec + (msg.header.stamp.nanosec * 1e-9)
         
         frame_id_str = msg.header.frame_id
-        img_name, comp, freq = frame_id_str.split(',')
+        img_name, comp, freq, battery_level = frame_id_str.split(',')
         frame_id = int(os.path.splitext(img_name)[0])
-        
-        self.writer.writerow([msg_time, frame_id, msg.track_id, msg.target_gt_id, msg.local_inference_time, msg.bb_top_left_x, msg.bb_top_left_y, msg.bb_width, msg.bb_height, msg.confidence, msg.iou, msg.iou_visible, msg.payload_bytes, img_name, freq, comp, msg.transmission_time])
+
+        self.writer.writerow([msg_time, frame_id, msg.track_id, msg.target_gt_id, msg.local_inference_time, msg.bb_top_left_x, msg.bb_top_left_y, msg.bb_width, msg.bb_height, msg.confidence, msg.iou, msg.iou_visible, msg.payload_bytes, img_name, freq, comp, msg.transmission_time, battery_level])
 
         self.csvfile.flush()
 
