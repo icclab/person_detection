@@ -64,7 +64,7 @@ class ImagePublisher(Node):
         log_name = os.path.basename(img_path)
         ros_image = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
         ros_image.header.stamp = self.get_clock().now().to_msg()
-        ros_image.header.frame_id = log_name + "," + str(self.compress) + "," + str(self.frequency)
+        ros_image.header.frame_id = log_name + "," + str(self.compress) + "," + str(self.frequency) + "," + str(100.0)
         self.publisher.publish(ros_image)
  
         # self.get_logger().info(f'[{self.frequency:.1f} Hz] Published image: {log_name}')
