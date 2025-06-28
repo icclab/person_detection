@@ -1,2 +1,7 @@
-# tf_pub_py
-tf pub py
+# Person detection
+Use [person_detect.launch.py](https://github.com/icclab/person_detection/blob/main/person_detect/launch/person_detect.launch.py) launch file for person detection on the Summit-XL.
+
+# Person tracking used with the NTUA paper
+1. **Local tracking with the Jetson Orin Nano:** Use [tracker_tegra.launch.py](https://github.com/icclab/person_detection/blob/main/person_detect/launch/new/tracker_tegra.launch.py) launch file for local human tracking along with the energy usage logging. The image publishing frequency, video fps, images folder, tracking and reference ground truth human id and ground truth folder can be parameterized. Use ```--show-args``` to list the parameters.  
+2. **Tracking on the RAP container:** First launch the Zenoh bridge between the Jetson and the RAP container. Then launch the tracking on the RAP container with the desired parameters [tracking_rap.launch.py](https://github.com/icclab/person_detection/blob/main/person_detect/launch/new/tracking_rap.launch.py). Then launch the tracking subscriber in the Orin which also publishes the images at a desired compression level along with other parameters described above. This also logs the energy values using **tegrastats**.
+3. **Tracking on the RAP container with dynamic freq:** First launch the Zenoh bridge and RAP tracking as described above. For dynamic freq publishing with frequencies listed in a CSV file for 1 sec each, like 5 Hz publishes 5 images for 1 sec, then another freq. like 9 Hz and so on use [tracker_sub_orin_dynamic_freq.launch.py](https://github.com/icclab/person_detection/blob/main/person_detect/launch/new/tracker_sub_orin_dynamic_freq.launch.py) launch file.   
